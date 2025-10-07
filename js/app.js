@@ -520,13 +520,10 @@ async function handleSubmit(event) {
         
         // Step 9: Show success message with confetti
         console.log('\n🎉 Step 9: Showing success notification...');
-        const emailStatus = result.emailResults 
-            ? `Emails sent: ${result.emailResults.successful}/${result.emailResults.total}` 
-            : 'Email notifications disabled';
         
         showSuccessNotification(
             `Secret Santa event "${result.event.event_name}" created successfully!`,
-            `${result.participants.length} participants • ${result.assignments.length} assignments • ${emailStatus}`
+            `${result.participants.length} participants • ${result.assignments.length} assignments • View assignments in Supabase!`
         );
         
         // Step 10: Reset form or show "Create Another" option
@@ -646,6 +643,14 @@ async function saveToSupabase(formData) {
         console.log('📬 Step 5: Sending notification emails...');
         let emailResults = null;
         
+        // Note: Email sending from browser is blocked by CORS
+        // For production, you would need a backend server to send emails
+        console.log('ℹ️ Email notifications require a backend server due to CORS restrictions');
+        console.log('ℹ️ Event created successfully - you can view assignments in Supabase');
+        console.log('');
+        
+        /* Uncomment this section if you have a backend server:
+        
         if (window.EmailService && window.EmailService.isConfigured()) {
             try {
                 // Prepare event data for emails
@@ -675,6 +680,7 @@ async function saveToSupabase(formData) {
             console.log('ℹ️ Email service not configured - skipping email notifications');
             console.log('   To enable emails, configure js/emailConfig.js with your Resend API key');
         }
+        */
         console.log('');
         
         // Final summary
