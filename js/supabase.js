@@ -9,26 +9,56 @@ let supabaseClient = null;
 
 /**
  * Initializes the Supabase client
- * Reads configuration from window.SUPABASE_CONFIG
+ * Tries to load from window.SUPABASE_CONFIG first (local development)
+ * Falls back to API endpoint /api/config (production on Vercel)
  */
-function initializeSupabase() {
+async function initializeSupabase() {
     try {
-        // Check if config exists
-        if (!window.SUPABASE_CONFIG) {
-            console.error('❌ Supabase config not found! Please create js/config.js');
-            return false;
+        let url, anonKey;
+        
+        // Try to load from local config first
+        if (window.SUPABASE_CONFIG) {
+            console.log('📍 Loading Supabase config from local file...');
+            ({ url, anonKey } = window.SUPABASE_CONFIG);
+            
+            if (url.includes('your-project-ref') || anonKey.includes('your-anon-key')) {
+                console.warn('⚠️ Using example config. Trying API endpoint...');
+                // Fall through to API endpoint
+            } else {
+                // Valid local config found
+                console.log('✅ Local config loaded');
+            }
         }
-
-        const { url, anonKey } = window.SUPABASE_CONFIG;
+        
+        // If no valid local config, try API endpoint (for Vercel deployment)
+        if (!url || !anonKey || url.includes('your-project-ref')) {
+            console.log('📍 Loading Supabase config from API endpoint...');
+            
+            try {
+                const response = await fetch('/api/config');
+                
+                if (response.ok) {
+                    const config = await response.json();
+                    url = config.url;
+                    anonKey = config.anonKey;
+                    console.log('✅ Config loaded from API endpoint');
+                } else {
+                    const error = await response.json();
+                    console.error('❌ Failed to load config from API:', error.error);
+                    console.error('💡 For local development: create js/config.js');
+                    console.error('💡 For Vercel: add SUPABASE_URL and SUPABASE_ANON_KEY to environment variables');
+                    return false;
+                }
+            } catch (fetchError) {
+                console.warn('⚠️ Could not fetch config from API endpoint:', fetchError.message);
+                console.error('💡 Make sure SUPABASE_URL and SUPABASE_ANON_KEY are set in Vercel environment variables');
+                return false;
+            }
+        }
 
         // Validate config
         if (!url || !anonKey) {
             console.error('❌ Invalid Supabase config! URL and anon key are required.');
-            return false;
-        }
-
-        if (url.includes('your-project-ref') || anonKey.includes('your-anon-key')) {
-            console.warn('⚠️ Using example Supabase config. Please update js/config.js with your credentials.');
             return false;
         }
 
@@ -410,11 +440,14 @@ window.SupabaseDB = {
 
 // Try to initialize when script loads
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeSupabase();
+    document.addEventListener('DOMContentLoaded', async () => {
+        await initializeSupabase();
     });
 } else {
-    initializeSupabase();
+    // Call async initialization
+    initializeSupabase().catch(err => {
+        console.error('Failed to initialize Supabase:', err);
+    });
 }
 
 console.log('📦 Supabase module loaded');

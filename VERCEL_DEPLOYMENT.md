@@ -42,13 +42,17 @@ Or use the web interface (easier for first time).
 - **Install Command:** (leave empty)
 
 #### D. Add Environment Variables
-**IMPORTANT:** Click "Environment Variables" and add:
+**IMPORTANT:** Click "Environment Variables" and add these **5 variables**:
 
 | Name | Value |
 |------|-------|
+| `SUPABASE_URL` | `https://jkovolickaehfodthnts.supabase.co` |
+| `SUPABASE_ANON_KEY` | Your Supabase anon key (from js/config.js) |
 | `RESEND_API_KEY` | `re_4VzhQghU_HkfaFsTxML51iFo8Dfrrxvi2` |
 | `FROM_EMAIL` | `onboarding@resend.dev` |
 | `FROM_NAME` | `Secret Santa Generator` |
+
+**Note:** For each variable, check all 3 environments: Production, Preview, Development
 
 #### E. Deploy!
 1. Click **"Deploy"**
