@@ -330,6 +330,13 @@ async function handleSubmit(event) {
         return;
     }
     
+    // Check if Supabase is ready
+    if (!window.SupabaseDB || !window.SupabaseDB.isReady()) {
+        showAlert('Database connection not available. Please configure Supabase credentials.', 'warning');
+        console.error('Supabase not initialized. Create js/config.js with your credentials.');
+        return;
+    }
+    
     // Show loading state
     showLoadingState();
     
@@ -337,11 +344,10 @@ async function handleSubmit(event) {
         // Collect form data
         const formData = collectFormData();
         
-        console.log('Form data:', formData);
+        console.log('📝 Submitting form data:', formData);
         
-        // TODO: Send data to Supabase
-        // For now, simulate API call
-        await simulateAPICall(formData);
+        // Save to Supabase
+        await saveToSupabase(formData);
         
         // Show success message
         showAlert('Secret Santa event created successfully! 🎉', 'success');
@@ -353,8 +359,8 @@ async function handleSubmit(event) {
         }, 2000);
         
     } catch (error) {
-        console.error('Error submitting form:', error);
-        showAlert('Error creating event. Please try again.', 'error');
+        console.error('❌ Error submitting form:', error);
+        showAlert(`Error creating event: ${error.message}`, 'error');
     } finally {
         hideLoadingState();
     }
@@ -390,15 +396,40 @@ function collectFormData() {
 }
 
 /**
- * Simulates API call (replace with actual Supabase integration)
+ * Saves event and participants to Supabase
+ * @param {Object} formData - Form data collected from collectFormData()
+ * @returns {Promise<Object>} Object containing event and participants data
  */
-function simulateAPICall(data) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            console.log('Would send to Supabase:', data);
-            resolve();
-        }, 1500);
-    });
+async function saveToSupabase(formData) {
+    console.log('💾 Starting Supabase save operation...');
+    
+    try {
+        // Step 1: Save the event
+        console.log('Step 1: Saving event...');
+        const savedEvent = await window.SupabaseDB.saveEvent(formData.event);
+        console.log('✅ Event saved with ID:', savedEvent.id);
+        
+        // Step 2: Save participants
+        console.log('Step 2: Saving participants...');
+        const savedParticipants = await window.SupabaseDB.saveParticipants(
+            savedEvent.id,
+            formData.participants
+        );
+        console.log('✅ Participants saved:', savedParticipants.length);
+        
+        // Step 3: Generate and save assignments (future enhancement)
+        // For now, assignments will be generated later
+        console.log('ℹ️ Assignment generation will be implemented in next phase');
+        
+        return {
+            event: savedEvent,
+            participants: savedParticipants
+        };
+        
+    } catch (error) {
+        console.error('❌ Supabase save failed:', error);
+        throw error;
+    }
 }
 
 /**

@@ -358,6 +358,20 @@
 
     </div>
 
+    <!-- Supabase JavaScript Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Configuration -->
+    <script>
+        // Try to load config.js, fallback to config.example.js
+        // In production, you should have config.js with your credentials
+    </script>
+    <script src="js/config.example.js" onerror="console.warn('No config found')"></script>
+    <script src="js/config.js" onerror="console.log('Using example config (config.js not found - this is normal for first setup)')"></script>
+    
+    <!-- Supabase Integration -->
+    <script src="js/supabase.js"></script>
+    
     <!-- JavaScript Application -->
     <script>
         // Set min date to today
