@@ -1,0 +1,27 @@
+{
+  "name": "secret-santa-generator",
+  "version": "1.0.0",
+  "description": "A beautiful web application to organize Secret Santa gift exchanges",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gvzardetto/secret-santa-generator.git"
+  },
+  "keywords": [
+    "secret-santa",
+    "gift-exchange",
+    "christmas",
+    "holiday",
+    "supabase",
+    "vercel"
+  ],
+  "author": "Guilherme Zardetto",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
+

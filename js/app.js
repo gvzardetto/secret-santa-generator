@@ -520,10 +520,13 @@ async function handleSubmit(event) {
         
         // Step 9: Show success message with confetti
         console.log('\n🎉 Step 9: Showing success notification...');
+        const emailStatus = result.emailResults 
+            ? `Emails sent: ${result.emailResults.successful}/${result.emailResults.total}` 
+            : 'Emails sent via serverless function';
         
         showSuccessNotification(
             `Secret Santa event "${result.event.event_name}" created successfully!`,
-            `${result.participants.length} participants • ${result.assignments.length} assignments • View assignments in Supabase!`
+            `${result.participants.length} participants • ${result.assignments.length} assignments • ${emailStatus}`
         );
         
         // Step 10: Reset form or show "Create Another" option
@@ -639,48 +642,35 @@ async function saveToSupabase(formData) {
         console.log('✅ Assignments saved:', savedAssignments.length);
         console.log('');
         
-        // Step 5: Send notification emails
-        console.log('📬 Step 5: Sending notification emails...');
+        // Step 5: Send notification emails via serverless function
+        console.log('📬 Step 5: Sending notification emails via serverless function...');
         let emailResults = null;
         
-        // Note: Email sending from browser is blocked by CORS
-        // For production, you would need a backend server to send emails
-        console.log('ℹ️ Email notifications require a backend server due to CORS restrictions');
-        console.log('ℹ️ Event created successfully - you can view assignments in Supabase');
-        console.log('');
-        
-        /* Uncomment this section if you have a backend server:
-        
-        if (window.EmailService && window.EmailService.isConfigured()) {
-            try {
-                // Prepare event data for emails
-                const eventDataForEmail = {
-                    eventName: savedEvent.event_name,
-                    exchangeDate: savedEvent.exchange_date,
-                    budget: savedEvent.budget
-                };
-                
-                // Send emails to all participants
-                emailResults = await window.EmailService.sendAllEmails(
-                    savedParticipants,
-                    assignments,
-                    eventDataForEmail,
-                    formData.event.organizerEmail
-                );
-                
-                console.log('✅ Emails sent successfully!');
-                console.log(`   Delivered: ${emailResults.successful}/${emailResults.total}`);
-                
-            } catch (emailError) {
-                console.warn('⚠️ Email sending failed, but event was created successfully');
-                console.warn('   Error:', emailError.message);
-                console.warn('   You can manually notify participants or retry later');
-            }
-        } else {
-            console.log('ℹ️ Email service not configured - skipping email notifications');
-            console.log('   To enable emails, configure js/emailConfig.js with your Resend API key');
+        try {
+            // Prepare event data for emails
+            const eventDataForEmail = {
+                eventName: savedEvent.event_name,
+                exchangeDate: savedEvent.exchange_date,
+                budget: savedEvent.budget
+            };
+            
+            // Send emails via our serverless function (no CORS issues!)
+            emailResults = await window.EmailService.sendAllEmails(
+                savedParticipants,
+                assignments,
+                eventDataForEmail,
+                formData.event.organizerEmail
+            );
+            
+            console.log('✅ Emails sent successfully!');
+            console.log(`   Delivered: ${emailResults.successful}/${emailResults.total}`);
+            
+        } catch (emailError) {
+            console.warn('⚠️ Email sending failed, but event was created successfully');
+            console.warn('   Error:', emailError.message);
+            console.warn('   You can manually notify participants or check Supabase for assignments');
         }
-        */
+        
         console.log('');
         
         // Final summary

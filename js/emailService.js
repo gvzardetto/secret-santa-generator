@@ -5,7 +5,10 @@
 // CONFIGURATION
 // ==============================================
 
-const RESEND_API_ENDPOINT = 'https://api.resend.com/emails';
+// Use our serverless function instead of calling Resend directly
+// This avoids CORS issues because we're calling our own server
+const EMAIL_API_ENDPOINT = '/api/send-emails'; // Vercel serverless function
+const RESEND_API_ENDPOINT = 'https://api.resend.com/emails'; // Direct (has CORS issues)
 
 /**
  * Checks if email service is configured
@@ -490,7 +493,7 @@ async function sendOrganizerEmail(organizerEmail, eventData, participantCount) {
 }
 
 /**
- * Sends emails to all participants with their assignments
+ * Sends emails using serverless function (avoids CORS)
  * 
  * @param {Array<Object>} participants - Array of all participants
  * @param {Array<Object>} assignments - Array of all assignments
@@ -499,91 +502,87 @@ async function sendOrganizerEmail(organizerEmail, eventData, participantCount) {
  * @returns {Promise<Object>} Summary of email sending results
  */
 async function sendAllEmails(participants, assignments, eventData, organizerEmail) {
-    console.log('📬 Starting bulk email send operation...');
+    console.log('📬 Starting bulk email send via serverless function...');
     console.log('═'.repeat(60));
     console.log(`👥 Participants: ${participants.length}`);
     console.log(`📧 Emails to send: ${participants.length + 1} (participants + organizer)`);
     console.log('═'.repeat(60));
     
-    const results = {
-        total: participants.length,
-        successful: 0,
-        failed: 0,
-        errors: [],
-        emailIds: []
-    };
-    
     try {
-        // Send emails to all participants
-        for (let i = 0; i < participants.length; i++) {
-            const participant = participants[i];
-            
-            // Find this participant's assignment
+        // Prepare all emails
+        const emails = [];
+        
+        // Participant emails
+        for (const participant of participants) {
             const assignment = assignments.find(a => a.participantId === participant.id);
             
             if (!assignment) {
                 console.error(`❌ No assignment found for ${participant.name}`);
-                results.failed++;
-                results.errors.push({
-                    email: participant.email,
-                    error: 'No assignment found'
-                });
                 continue;
             }
             
-            try {
-                const participantData = {
-                    name: participant.name,
-                    email: participant.email
-                };
-                
-                const assignmentData = {
+            const html = getParticipantEmailTemplate(
+                { name: participant.name, email: participant.email },
+                { 
                     assignedToName: assignment.assignedToName,
                     assignedToWishList: assignment.assignedToWishList
-                };
-                
-                const result = await sendParticipantEmail(participantData, assignmentData, eventData);
-                
-                results.successful++;
-                results.emailIds.push({
-                    email: participant.email,
-                    emailId: result.id
-                });
-                
-                // Small delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-            } catch (error) {
-                results.failed++;
-                results.errors.push({
-                    email: participant.email,
-                    error: error.message
-                });
-            }
+                },
+                eventData
+            );
+            
+            emails.push({
+                to: participant.email,
+                subject: `🎁 Your Secret Santa Assignment - ${eventData.eventName}`,
+                html: html
+            });
         }
         
-        // Send confirmation to organizer
-        console.log('\n📧 Sending confirmation to organizer...');
-        try {
-            const organizerResult = await sendOrganizerEmail(organizerEmail, eventData, participants.length);
-            results.emailIds.push({
-                email: organizerEmail,
-                emailId: organizerResult.id,
-                type: 'organizer'
-            });
-            console.log('✅ Organizer email sent successfully');
-        } catch (error) {
-            console.error('⚠️ Failed to send organizer email:', error.message);
-            // Don't fail the whole operation if organizer email fails
+        // Organizer email
+        const organizerHtml = getOrganizerEmailTemplate(eventData, participants.length);
+        emails.push({
+            to: organizerEmail,
+            subject: `✅ Secret Santa Event Created - ${eventData.eventName}`,
+            html: organizerHtml
+        });
+        
+        console.log(`📦 Prepared ${emails.length} emails, sending to serverless function...`);
+        
+        // Call our serverless function
+        const response = await fetch(EMAIL_API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ emails })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to send emails');
         }
+        
+        const result = await response.json();
+        
+        // Format results
+        const results = {
+            total: participants.length,
+            successful: result.successful - 1, // Subtract organizer email
+            failed: result.failed,
+            errors: result.results
+                .filter(r => !r.success)
+                .map(r => ({ email: r.to, error: r.error })),
+            emailIds: result.results
+                .filter(r => r.success)
+                .map(r => ({ email: r.to, emailId: r.id }))
+        };
         
         // Print summary
         console.log('\n' + '═'.repeat(60));
         console.log('📊 EMAIL SEND SUMMARY');
         console.log('═'.repeat(60));
-        console.log(`✅ Successful: ${results.successful}/${results.total}`);
-        console.log(`❌ Failed: ${results.failed}/${results.total}`);
-        console.log(`📈 Success Rate: ${((results.successful/results.total)*100).toFixed(1)}%`);
+        console.log(`✅ Successful: ${result.successful}/${result.total}`);
+        console.log(`❌ Failed: ${result.failed}/${result.total}`);
+        console.log(`📈 Success Rate: ${((result.successful/result.total)*100).toFixed(1)}%`);
         
         if (results.errors.length > 0) {
             console.log('\n❌ Errors:');
@@ -597,7 +596,7 @@ async function sendAllEmails(participants, assignments, eventData, organizerEmai
         return results;
         
     } catch (error) {
-        console.error('❌ Bulk email send failed:', error);
+        console.error('❌ Email send failed:', error);
         throw error;
     }
 }
