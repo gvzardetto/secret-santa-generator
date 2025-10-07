@@ -78,14 +78,14 @@ function getParticipantEmailTemplate(participantData, assignmentData, eventData)
     const { assignedToName, assignedToWishList } = assignmentData;
     const { eventName, exchangeDate, budget } = eventData;
     
-    const formattedDate = new Date(exchangeDate).toLocaleDateString('en-US', {
+    const formattedDate = new Date(exchangeDate).toLocaleDateString('pt-BR', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     });
     
-    const budgetText = budget ? `$${parseFloat(budget).toFixed(2)}` : 'No limit set';
+    const budgetText = budget ? `R$ ${parseFloat(budget).toFixed(2)}` : 'Sem limite definido';
     
     return `
 <!DOCTYPE html>
@@ -203,48 +203,48 @@ function getParticipantEmailTemplate(participantData, assignmentData, eventData)
     <div class="container">
         <div class="header">
             <div class="emoji">🎅🎁</div>
-            <h1>Secret Santa Assignment</h1>
+            <h1>Seu Amigo Secreto</h1>
         </div>
         
         <div class="greeting">
-            <p>Ho ho ho, ${name}! 🎄</p>
-            <p>The Secret Santa assignments have been made, and you've been matched with someone special!</p>
+            <p>Oi, ${name}! 🎄</p>
+            <p>Os sorteios do Amigo Secreto foram realizados e você foi combinado com alguém especial!</p>
         </div>
         
         <div class="event-details">
-            <h2 style="margin-top: 0; color: #F59E0B;">📋 Event Details</h2>
-            <div class="detail-row"><strong>Event:</strong> ${eventName}</div>
-            <div class="detail-row"><strong>Exchange Date:</strong> ${formattedDate}</div>
-            <div class="detail-row"><strong>Suggested Budget:</strong> ${budgetText}</div>
+            <h2 style="margin-top: 0; color: #F59E0B;">📋 Detalhes do Evento</h2>
+            <div class="detail-row"><strong>Evento:</strong> ${eventName}</div>
+            <div class="detail-row"><strong>Data da Revelação:</strong> ${formattedDate}</div>
+            <div class="detail-row"><strong>Valor Sugerido:</strong> ${budgetText}</div>
         </div>
         
         <div class="assignment-box">
-            <div class="label">You are buying a gift for:</div>
+            <div class="label">Você vai presentear:</div>
             <div class="name">🎁 ${assignedToName} 🎁</div>
         </div>
         
         ${assignedToWishList ? `
         <div class="wish-list">
-            <h3>💝 Their Wish List:</h3>
+            <h3>💝 Lista de Desejos:</h3>
             <p>${assignedToWishList}</p>
         </div>
         ` : `
         <div class="wish-list">
-            <h3>💝 Wish List:</h3>
-            <p><em>No specific wishes provided. Use your creativity!</em></p>
+            <h3>💝 Lista de Desejos:</h3>
+            <p><em>Nenhuma preferência específica. Use sua criatividade para surpreender!</em></p>
         </div>
         `}
         
         <div class="reminder">
-            <p><strong>🤫 Important Reminder:</strong></p>
-            <p>Keep your assignment secret! Don't tell anyone who you're buying for. That's what makes Secret Santa fun!</p>
+            <p><strong>🤫 Lembre-se:</strong></p>
+            <p>Mantenha o sorteio em segredo! Não conte para ninguém quem você tirou. Essa é a graça do Amigo Secreto!</p>
         </div>
         
         <div class="footer">
-            <p>🎄 Happy Holidays! 🎄</p>
+            <p>🎄 Felizes Festas! 🎄</p>
             <p style="margin-top: 15px; font-size: 12px;">
-                This email was sent by Secret Santa Generator.<br>
-                Please do not reply to this email.
+                Este e-mail foi enviado pelo Amigo Secreto Online.<br>
+                Por favor, não responda este e-mail.
             </p>
         </div>
     </div>
@@ -259,14 +259,14 @@ function getParticipantEmailTemplate(participantData, assignmentData, eventData)
 function getOrganizerEmailTemplate(eventData, participantCount) {
     const { eventName, exchangeDate, budget } = eventData;
     
-    const formattedDate = new Date(exchangeDate).toLocaleDateString('en-US', {
+    const formattedDate = new Date(exchangeDate).toLocaleDateString('pt-BR', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     });
     
-    const budgetText = budget ? `$${parseFloat(budget).toFixed(2)}` : 'No limit set';
+    const budgetText = budget ? `R$ ${parseFloat(budget).toFixed(2)}` : 'Sem limite definido';
     
     return `
 <!DOCTYPE html>
@@ -350,51 +350,51 @@ function getOrganizerEmailTemplate(eventData, participantCount) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>✅ Event Created Successfully!</h1>
-            <div class="success-badge">🎉 Secret Santa is Ready! 🎉</div>
+            <h1>✅ Evento Criado com Sucesso!</h1>
+            <div class="success-badge">🎉 Amigo Secreto Pronto! 🎉</div>
         </div>
         
-        <p>Great news! Your Secret Santa event has been created and all participants have been notified.</p>
+        <p>Ótimas notícias! Seu evento de Amigo Secreto foi criado e todos os participantes já foram notificados por e-mail!</p>
         
         <div class="summary-box">
-            <h2 style="margin-top: 0; color: #374151;">📊 Event Summary</h2>
+            <h2 style="margin-top: 0; color: #374151;">📊 Resumo do Evento</h2>
             <div class="detail-row">
-                <strong>Event Name:</strong> ${eventName}
+                <strong>Nome do Evento:</strong> ${eventName}
             </div>
             <div class="detail-row">
-                <strong>Exchange Date:</strong> ${formattedDate}
+                <strong>Data da Revelação:</strong> ${formattedDate}
             </div>
             <div class="detail-row">
-                <strong>Suggested Budget:</strong> ${budgetText}
+                <strong>Valor Sugerido:</strong> ${budgetText}
             </div>
             <div class="detail-row">
-                <strong>Total Participants:</strong> ${participantCount}
+                <strong>Total de Participantes:</strong> ${participantCount}
             </div>
             <div class="detail-row">
-                <strong>Status:</strong> <span style="color: #059669; font-weight: bold;">✓ All assignments sent</span>
+                <strong>Status:</strong> <span style="color: #059669; font-weight: bold;">✓ Todos os sorteios enviados</span>
             </div>
         </div>
         
         <div class="info-box">
-            <h3 style="margin-top: 0;">ℹ️ What Happens Next?</h3>
+            <h3 style="margin-top: 0;">ℹ️ O Que Acontece Agora?</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Each participant has received an email with their Secret Santa assignment</li>
-                <li>The assignments are kept secret - only each person knows who they're buying for</li>
-                <li>Participants have been reminded to keep their assignment confidential</li>
-                <li>All assignments have been saved in the database for your records</li>
+                <li>Cada participante recebeu um e-mail com seu sorteio do Amigo Secreto</li>
+                <li>Os sorteios são mantidos em segredo - apenas cada pessoa sabe quem vai presentear</li>
+                <li>Os participantes foram lembrados de manter o sorteio confidencial</li>
+                <li>Todos os sorteios foram salvos no banco de dados para seus registros</li>
             </ul>
         </div>
         
         <div style="background: #fef2f2; padding: 15px; border-radius: 6px; border-left: 4px solid #DC2626; margin: 20px 0;">
-            <p style="margin: 0;"><strong>🔒 Privacy Note:</strong></p>
-            <p style="margin: 5px 0 0 0;">As the organizer, you have access to all assignments in your Supabase database. Please keep this information confidential to maintain the surprise!</p>
+            <p style="margin: 0;"><strong>🔒 Nota de Privacidade:</strong></p>
+            <p style="margin: 5px 0 0 0;">Como organizador, você tem acesso a todos os sorteios no banco de dados Supabase. Por favor, mantenha essa informação confidencial para preservar a surpresa!</p>
         </div>
         
         <div class="footer">
-            <p>🎄 Happy Holidays! 🎄</p>
+            <p>🎄 Felizes Festas! 🎄</p>
             <p style="margin-top: 15px; font-size: 12px;">
-                This email was sent by Secret Santa Generator.<br>
-                Please do not reply to this email.
+                Este e-mail foi enviado pelo Amigo Secreto Online.<br>
+                Por favor, não responda este e-mail.
             </p>
         </div>
     </div>
@@ -438,7 +438,7 @@ async function sendParticipantEmail(participantData, assignmentData, eventData) 
         const emailData = {
             from: `${fromName} <${fromEmail}>`,
             to: [participantData.email],
-            subject: `🎁 Your Secret Santa Assignment - ${eventData.eventName}`,
+            subject: `🎁 Seu Amigo Secreto - ${eventData.eventName}`,
             html: htmlContent
         };
         
@@ -564,7 +564,7 @@ async function sendAllEmails(participants, assignments, eventData, organizerEmai
             
             emails.push({
                 to: participant.email,
-                subject: `🎁 Your Secret Santa Assignment - ${eventData.eventName}`,
+                subject: `🎁 Seu Amigo Secreto - ${eventData.eventName}`,
                 html: html
             });
         }
@@ -573,7 +573,7 @@ async function sendAllEmails(participants, assignments, eventData, organizerEmai
         const organizerHtml = getOrganizerEmailTemplate(eventData, participants.length);
         emails.push({
             to: organizerEmail,
-            subject: `✅ Secret Santa Event Created - ${eventData.eventName}`,
+            subject: `✅ Amigo Secreto Criado - ${eventData.eventName}`,
             html: organizerHtml
         });
         

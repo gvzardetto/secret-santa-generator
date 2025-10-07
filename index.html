@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secret Santa Generator - Organize Your Gift Exchange</title>
+    <title>Amigo Secreto Online - Organize sua Troca de Presentes</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,13 +40,13 @@
         <!-- Header -->
         <header class="text-center mb-8">
             <div class="mb-4">
-                <span class="text-7xl">🎅</span>
+                <span class="text-7xl">🎁</span>
             </div>
             <h1 class="text-5xl font-bold text-gray-800 mb-2">
-                Secret Santa Generator
+                Amigo Secreto Online
             </h1>
             <p class="text-xl text-gray-600">
-                Organize your gift exchange in seconds
+                Organize sua troca de presentes em segundos
             </p>
         </header>
 
@@ -56,22 +56,22 @@
             <!-- Event Details Section -->
             <div class="bg-white rounded-lg shadow-lg p-6 border-t-4 border-santa">
                 <div class="flex items-center mb-6">
-                    <span class="text-3xl mr-3">🎁</span>
-                    <h2 class="text-2xl font-semibold text-gray-800">Event Details</h2>
+                    <span class="text-3xl mr-3">🎉</span>
+                    <h2 class="text-2xl font-semibold text-gray-800">Detalhes do Evento</h2>
                 </div>
                 
                 <div class="space-y-4">
                     <!-- Event Name -->
                     <div>
                         <label for="eventName" class="block text-sm font-medium text-gray-700 mb-1">
-                            Event Name <span class="text-santa">*</span>
+                            Nome do Evento <span class="text-santa">*</span>
                         </label>
                         <input 
                             type="text" 
                             id="eventName" 
                             name="eventName"
                             required
-                            placeholder="e.g., Office Christmas Party 2025"
+                            placeholder="ex: Amigo Secreto da Família 2025"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-santa focus:border-transparent transition"
                         >
                         <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
@@ -82,7 +82,7 @@
                         <!-- Exchange Date -->
                         <div>
                             <label for="exchangeDate" class="block text-sm font-medium text-gray-700 mb-1">
-                                Exchange Date <span class="text-santa">*</span>
+                                Data da Revelação <span class="text-santa">*</span>
                             </label>
                             <input 
                                 type="date" 
@@ -98,10 +98,10 @@
                         <!-- Budget -->
                         <div>
                             <label for="budget" class="block text-sm font-medium text-gray-700 mb-1">
-                                Budget (Optional)
+                                Valor Sugerido (Opcional)
                             </label>
                             <div class="relative">
-                                <span class="absolute left-3 top-2 text-gray-500 text-lg">$</span>
+                                <span class="absolute left-3 top-2 text-gray-500 text-lg">R$</span>
                                 <input 
                                     type="number" 
                                     id="budget" 
@@ -109,7 +109,7 @@
                                     placeholder="50.00"
                                     step="0.01"
                                     min="0"
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-santa focus:border-transparent transition"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-santa focus:border-transparent transition"
                                 >
                             </div>
                         </div>
@@ -118,14 +118,14 @@
                     <!-- Organizer Email -->
                     <div>
                         <label for="organizerEmail" class="block text-sm font-medium text-gray-700 mb-1">
-                            Organizer Email <span class="text-santa">*</span>
+                            E-mail do Organizador <span class="text-santa">*</span>
                         </label>
                         <input 
                             type="email" 
                             id="organizerEmail" 
                             name="organizerEmail"
                             required
-                            placeholder="your.email@example.com"
+                            placeholder="seu.email@exemplo.com"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-santa focus:border-transparent transition"
                         >
                         <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
@@ -139,12 +139,12 @@
                     <div class="flex items-center">
                         <span class="text-3xl mr-3">👥</span>
                         <h2 class="text-2xl font-semibold text-gray-800">
-                            Participants 
-                            <span class="text-sm font-normal text-gray-500">(minimum 3)</span>
+                            Participantes 
+                            <span class="text-sm font-normal text-gray-500">(mínimo 3)</span>
                         </h2>
                     </div>
                     <div class="bg-festive text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        <span id="participantCount">3</span> people
+                        <span id="participantCount">3</span> pessoas
                     </div>
                 </div>
 
@@ -154,12 +154,12 @@
                     <!-- Participant 1 -->
                     <div class="participant-row bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <div class="flex items-start justify-between mb-3">
-                            <h3 class="font-semibold text-gray-700">Participant 1</h3>
+                            <h3 class="font-semibold text-gray-700">Participante 1</h3>
                             <button 
                                 type="button" 
                                 class="remove-participant text-gray-400 hover:text-santa transition disabled:opacity-30 disabled:cursor-not-allowed"
                                 disabled
-                                aria-label="Remove participant"
+                                aria-label="Remover participante"
                             >
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -169,26 +169,26 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Name <span class="text-santa">*</span>
+                                    Nome <span class="text-santa">*</span>
                                 </label>
                                 <input 
                                     type="text" 
                                     name="participantName[]"
                                     required
-                                    placeholder="John Doe"
+                                    placeholder="João Silva"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                                 >
                                 <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Email <span class="text-santa">*</span>
+                                    E-mail <span class="text-santa">*</span>
                                 </label>
                                 <input 
                                     type="email" 
                                     name="participantEmail[]"
                                     required
-                                    placeholder="john@example.com"
+                                    placeholder="joao@exemplo.com"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                                 >
                                 <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
@@ -196,12 +196,12 @@
                         </div>
                         <div class="mt-3">
                             <label class="block text-xs font-medium text-gray-600 mb-1">
-                                Wish List (Optional)
+                                Lista de Desejos (Opcional)
                             </label>
                             <textarea 
                                 name="participantWishList[]"
                                 rows="2"
-                                placeholder="Gift ideas, sizes, interests..."
+                                placeholder="Ideias de presente, tamanhos, preferências..."
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm resize-none"
                             ></textarea>
                         </div>
@@ -210,12 +210,12 @@
                     <!-- Participant 2 -->
                     <div class="participant-row bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <div class="flex items-start justify-between mb-3">
-                            <h3 class="font-semibold text-gray-700">Participant 2</h3>
+                            <h3 class="font-semibold text-gray-700">Participante 2</h3>
                             <button 
                                 type="button" 
                                 class="remove-participant text-gray-400 hover:text-santa transition disabled:opacity-30 disabled:cursor-not-allowed"
                                 disabled
-                                aria-label="Remove participant"
+                                aria-label="Remover participante"
                             >
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -225,26 +225,26 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Name <span class="text-santa">*</span>
+                                    Nome <span class="text-santa">*</span>
                                 </label>
                                 <input 
                                     type="text" 
                                     name="participantName[]"
                                     required
-                                    placeholder="Jane Smith"
+                                    placeholder="Maria Santos"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                                 >
                                 <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Email <span class="text-santa">*</span>
+                                    E-mail <span class="text-santa">*</span>
                                 </label>
                                 <input 
                                     type="email" 
                                     name="participantEmail[]"
                                     required
-                                    placeholder="jane@example.com"
+                                    placeholder="maria@exemplo.com"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                                 >
                                 <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
@@ -252,12 +252,12 @@
                         </div>
                         <div class="mt-3">
                             <label class="block text-xs font-medium text-gray-600 mb-1">
-                                Wish List (Optional)
+                                Lista de Desejos (Opcional)
                             </label>
                             <textarea 
                                 name="participantWishList[]"
                                 rows="2"
-                                placeholder="Gift ideas, sizes, interests..."
+                                placeholder="Ideias de presente, tamanhos, preferências..."
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm resize-none"
                             ></textarea>
                         </div>
@@ -266,12 +266,12 @@
                     <!-- Participant 3 -->
                     <div class="participant-row bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <div class="flex items-start justify-between mb-3">
-                            <h3 class="font-semibold text-gray-700">Participant 3</h3>
+                            <h3 class="font-semibold text-gray-700">Participante 3</h3>
                             <button 
                                 type="button" 
                                 class="remove-participant text-gray-400 hover:text-santa transition disabled:opacity-30 disabled:cursor-not-allowed"
                                 disabled
-                                aria-label="Remove participant"
+                                aria-label="Remover participante"
                             >
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -281,26 +281,26 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Name <span class="text-santa">*</span>
+                                    Nome <span class="text-santa">*</span>
                                 </label>
                                 <input 
                                     type="text" 
                                     name="participantName[]"
                                     required
-                                    placeholder="Bob Johnson"
+                                    placeholder="Carlos Oliveira"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                                 >
                                 <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Email <span class="text-santa">*</span>
+                                    E-mail <span class="text-santa">*</span>
                                 </label>
                                 <input 
                                     type="email" 
                                     name="participantEmail[]"
                                     required
-                                    placeholder="bob@example.com"
+                                    placeholder="carlos@exemplo.com"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                                 >
                                 <div class="error-message text-xs text-red-600 mt-1 hidden"></div>
@@ -308,12 +308,12 @@
                         </div>
                         <div class="mt-3">
                             <label class="block text-xs font-medium text-gray-600 mb-1">
-                                Wish List (Optional)
+                                Lista de Desejos (Opcional)
                             </label>
                             <textarea 
                                 name="participantWishList[]"
                                 rows="2"
-                                placeholder="Gift ideas, sizes, interests..."
+                                placeholder="Ideias de presente, tamanhos, preferências..."
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm resize-none"
                             ></textarea>
                         </div>
@@ -330,7 +330,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
-                    Add Participant
+                    Adicionar Participante
                 </button>
             </div>
 
@@ -341,10 +341,10 @@
                     id="submitBtn"
                     class="bg-santa hover:bg-santa-dark text-white font-bold py-4 px-12 rounded-xl text-lg shadow-lg hover:shadow-xl transition duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                    🎁 Create Secret Santa Event
+                    🎁 Criar Amigo Secreto
                 </button>
                 <p class="mt-3 text-sm text-gray-600">
-                    Assignments will be randomly generated and emailed to each participant
+                    Os sorteios serão gerados automaticamente e enviados por e-mail para cada participante
                 </p>
             </div>
 
@@ -352,8 +352,8 @@
 
         <!-- Footer -->
         <footer class="text-center mt-12 text-gray-600 text-sm">
-            <p>Made with ❤️ for spreading holiday cheer</p>
-            <p class="mt-1">🎄 Happy Holidays! 🎄</p>
+            <p>Feito com ❤️ para espalhar alegria nas festas</p>
+            <p class="mt-1">🎄 Felizes Festas! 🎄</p>
         </footer>
 
     </div>

@@ -35,13 +35,13 @@ function createParticipantRow(index) {
     return `
         <div class="participant-row bg-gray-50 rounded-lg p-4 border border-gray-200 transition-all duration-300">
             <div class="flex items-start justify-between mb-3">
-                <h3 class="font-semibold text-gray-700">Participant ${index}</h3>
+                <h3 class="font-semibold text-gray-700">Participante ${index}</h3>
                 <button 
                     type="button" 
                     class="remove-participant text-gray-400 hover:text-santa transition disabled:opacity-30 disabled:cursor-not-allowed"
                     onclick="removeParticipant(this)"
                     ${participantCount <= MIN_PARTICIPANTS ? 'disabled' : ''}
-                    aria-label="Remove participant"
+                    aria-label="Remover participante"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -51,13 +51,13 @@ function createParticipantRow(index) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Name <span class="text-santa">*</span>
+                        Nome <span class="text-santa">*</span>
                     </label>
                     <input 
                         type="text" 
                         name="participantName[]"
                         required
-                        placeholder="John Doe"
+                        placeholder="Nome Completo"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                         oninput="validateForm()"
                     >
@@ -65,13 +65,13 @@ function createParticipantRow(index) {
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Email <span class="text-santa">*</span>
+                        E-mail <span class="text-santa">*</span>
                     </label>
                     <input 
                         type="email" 
                         name="participantEmail[]"
                         required
-                        placeholder="john@example.com"
+                        placeholder="email@exemplo.com"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm"
                         oninput="validateForm()"
                     >
@@ -80,12 +80,12 @@ function createParticipantRow(index) {
             </div>
             <div class="mt-3">
                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                    Wish List (Optional)
+                    Lista de Desejos (Opcional)
                 </label>
                 <textarea 
                     name="participantWishList[]"
                     rows="2"
-                    placeholder="Gift ideas, sizes, interests..."
+                    placeholder="Ideias de presente, tamanhos, preferências..."
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-festive focus:border-transparent text-sm resize-none"
                 ></textarea>
             </div>
@@ -123,7 +123,7 @@ function addParticipant() {
 function removeParticipant(button) {
     // Check if we can remove (must have at least MIN_PARTICIPANTS)
     if (participantCount <= MIN_PARTICIPANTS) {
-        showAlert(`You must have at least ${MIN_PARTICIPANTS} participants for Secret Santa!`, 'warning');
+        showAlert(`Você precisa de pelo menos ${MIN_PARTICIPANTS} participantes para o Amigo Secreto!`, 'warning');
         return;
     }
     
@@ -486,20 +486,20 @@ async function handleSubmit(event) {
     console.log('═'.repeat(60));
     
     // Step 0: Final validation
-    console.log('Step 0: Validating form...');
+    console.log('Passo 0: Validando formulário...');
     if (!validateForm()) {
-        showNotification('Please fix all errors before submitting', 'error');
+        showNotification('Por favor, corrija todos os erros antes de enviar', 'error');
         return;
     }
-    console.log('✅ Form validation passed');
+    console.log('✅ Formulário validado com sucesso');
     
     // Check if Supabase is ready
     if (!window.SupabaseDB || !window.SupabaseDB.isReady()) {
-        showNotification('Database connection not available. Please check your Supabase configuration.', 'error');
-        console.error('❌ Supabase not initialized. Create js/config.js with your credentials.');
+        showNotification('Conexão com banco de dados não disponível. Verifique sua configuração do Supabase.', 'error');
+        console.error('❌ Supabase não inicializado. Crie js/config.js com suas credenciais.');
         return;
     }
-    console.log('✅ Database connection verified');
+    console.log('✅ Conexão com banco de dados verificada');
     
     // Step 1: Show loading state
     showLoadingState();
@@ -519,26 +519,26 @@ async function handleSubmit(event) {
         const result = await saveToSupabase(formData);
         
         // Step 9: Show success message with confetti
-        console.log('\n🎉 Step 9: Showing success notification...');
+        console.log('\n🎉 Passo 9: Mostrando notificação de sucesso...');
         const emailStatus = result.emailResults 
-            ? `Emails sent: ${result.emailResults.successful}/${result.emailResults.total}` 
-            : 'Emails sent via serverless function';
+            ? `E-mails enviados: ${result.emailResults.successful}/${result.emailResults.total}` 
+            : 'E-mails enviados via serverless';
         
         showSuccessNotification(
-            `Secret Santa event "${result.event.event_name}" created successfully!`,
-            `${result.participants.length} participants • ${result.assignments.length} assignments • ${emailStatus}`
+            `Amigo Secreto "${result.event.event_name}" criado com sucesso!`,
+            `${result.participants.length} participantes • ${result.assignments.length} sorteios • ${emailStatus}`
         );
         
         // Step 10: Reset form or show "Create Another" option
-        console.log('\n🔄 Step 10: Resetting form...');
+        console.log('\n🔄 Passo 10: Resetando formulário...');
         setTimeout(() => {
             enableForm();
             form.reset();
             resetToDefaultState();
             hideLoadingState();
-            console.log('✅ Form reset complete');
+            console.log('✅ Formulário resetado');
             console.log('═'.repeat(60));
-            console.log('Ready to create another event! 🎅');
+            console.log('Pronto para criar outro evento! 🎁');
         }, 3000);
         
     } catch (error) {
@@ -549,18 +549,18 @@ async function handleSubmit(event) {
         });
         
         // Show user-friendly error message based on error type
-        let errorMessage = 'Failed to create Secret Santa event.';
+        let errorMessage = 'Falha ao criar o Amigo Secreto.';
         let errorDetails = error.message;
         
         if (error.message.includes('Supabase')) {
-            errorMessage = 'Database Error';
-            errorDetails = 'Could not save to database. Please check your connection.';
+            errorMessage = 'Erro no Banco de Dados';
+            errorDetails = 'Não foi possível salvar. Verifique sua conexão.';
         } else if (error.message.includes('email')) {
-            errorMessage = 'Email Error';
-            errorDetails = 'Event created but emails failed to send. Notify participants manually.';
+            errorMessage = 'Erro no Envio de E-mails';
+            errorDetails = 'Evento criado mas e-mails não foram enviados. Notifique os participantes manualmente.';
         } else if (error.message.includes('assignment')) {
-            errorMessage = 'Assignment Error';
-            errorDetails = 'Could not generate assignments. Please try again.';
+            errorMessage = 'Erro no Sorteio';
+            errorDetails = 'Não foi possível gerar os sorteios. Tente novamente.';
         }
         
         showNotification(`${errorMessage}: ${errorDetails}`, 'error');
@@ -709,7 +709,7 @@ function showLoadingState() {
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        Creating Event...
+        Criando Evento...
     `;
 }
 
@@ -718,7 +718,7 @@ function showLoadingState() {
  */
 function hideLoadingState() {
     submitBtn.disabled = false;
-    submitBtn.innerHTML = '🎁 Create Secret Santa Event';
+    submitBtn.innerHTML = '🎁 Criar Amigo Secreto';
 }
 
 /**
@@ -965,6 +965,6 @@ function formatDate(dateString) {
 // INITIALIZATION
 // ==============================================
 
-console.log('🎅 Secret Santa Generator initialized!');
-console.log(`Starting with ${participantCount} participants`);
+console.log('🎁 Amigo Secreto Online inicializado!');
+console.log(`Começando com ${participantCount} participantes`);
 
