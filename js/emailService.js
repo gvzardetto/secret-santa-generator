@@ -29,6 +29,7 @@ async function loadEmailConfig() {
         
         if (response.ok) {
             const config = await response.json();
+            console.log('📦 API config response:', config);
             
             if (config.email && config.email.configured) {
                 // Store in window for compatibility
@@ -38,11 +39,16 @@ async function loadEmailConfig() {
                     fromName: config.email.fromName
                 };
                 console.log('✅ Email config loaded from API endpoint');
+                console.log('📧 Email will be sent via serverless function at /api/send-emails');
                 return true;
             } else {
                 console.warn('⚠️ Email service not configured on server');
+                console.warn('💡 Make sure RESEND_API_KEY is set in Vercel environment variables');
+                console.log('   Current config.email:', config.email);
                 return false;
             }
+        } else {
+            console.error('❌ Config endpoint returned error:', response.status);
         }
     } catch (error) {
         console.warn('⚠️ Could not load email config from API:', error.message);
