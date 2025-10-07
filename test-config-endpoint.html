@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Config Endpoint</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #282c34;
+            color: #abb2bf;
+        }
+        .result {
+            background: #21252b;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        h1 { color: #61dafb; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Config Endpoint Test</h1>
+    <p>This page tests if the /api/config endpoint is working correctly.</p>
+    
+    <button onclick="testConfig()">Test /api/config</button>
+    <button onclick="testSupabase()">Test Supabase</button>
+    <button onclick="testEmail()">Test Email Config</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        async function testConfig() {
+            document.getElementById('results').innerHTML = '';
+            log('📡 Fetching /api/config...');
+            
+            try {
+                const response = await fetch('/api/config');
+                log(`Response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const config = await response.json();
+                    log('✅ Config endpoint responded successfully!', 'success');
+                    log('\nConfig returned:\n' + JSON.stringify(config, null, 2));
+                    
+                    if (config.supabase) {
+                        log('\n✅ Supabase config present', 'success');
+                        log(`URL: ${config.supabase.url}`);
+                        log(`Anon Key: ${config.supabase.anonKey.substring(0, 20)}...`);
+                    } else {
+                        log('\n❌ Supabase config missing!', 'error');
+                    }
+                    
+                    if (config.email) {
+                        log('\n✅ Email config present', 'success');
+                        log(`Configured: ${config.email.configured}`);
+                        log(`From Email: ${config.email.fromEmail}`);
+                        log(`From Name: ${config.email.fromName}`);
+                    } else {
+                        log('\n❌ Email config missing!', 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    log(`❌ Config endpoint error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Fetch failed: ${error.message}`, 'error');
+                log('Make sure you set environment variables in Vercel dashboard!');
+            }
+        }
+
+        async function testSupabase() {
+            document.getElementById('results').innerHTML = '';
+            log('🧪 Testing Supabase initialization...');
+            
+            // Wait a bit for auto-init
+            await new Promise(r => setTimeout(r, 2000));
+            
+            if (window.SupabaseDB && window.SupabaseDB.isReady()) {
+                log('✅ Supabase initialized successfully!', 'success');
+                
+                // Try a test connection
+                const connected = await window.SupabaseDB.testConnection();
+                log(`Connection test: ${connected ? '✅ PASS' : '❌ FAIL'}`, connected ? 'success' : 'error');
+            } else {
+                log('❌ Supabase not initialized', 'error');
+            }
+        }
+
+        async function testEmail() {
+            document.getElementById('results').innerHTML = '';
+            log('🧪 Testing Email configuration...');
+            
+            // Wait a bit for auto-init
+            await new Promise(r => setTimeout(r, 2000));
+            
+            if (window.EmailService) {
+                const configured = window.EmailService.isConfigured();
+                log(`Email configured: ${configured ? '✅ YES' : '❌ NO'}`, configured ? 'success' : 'error');
+                
+                if (window.EMAIL_CONFIG) {
+                    log('\nEMAIL_CONFIG contents:');
+                    log(JSON.stringify(window.EMAIL_CONFIG, null, 2));
+                } else {
+                    log('\n❌ window.EMAIL_CONFIG is undefined', 'error');
+                    log('Trying to load...');
+                    
+                    await window.EmailService.loadConfig();
+                    
+                    if (window.EMAIL_CONFIG) {
+                        log('✅ Config loaded successfully!', 'success');
+                        log(JSON.stringify(window.EMAIL_CONFIG, null, 2));
+                    } else {
+                        log('❌ Still failed to load', 'error');
+                    }
+                }
+            } else {
+                log('❌ EmailService not available', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+
