@@ -477,50 +477,99 @@ function validateAssignments(assignments, participants) {
 // ==============================================
 
 /**
- * Handles form submission
+ * Handles form submission with comprehensive error handling
  */
 async function handleSubmit(event) {
     event.preventDefault();
     
-    // Final validation
+    console.log('🚀 Form submission started...');
+    console.log('═'.repeat(60));
+    
+    // Step 0: Final validation
+    console.log('Step 0: Validating form...');
     if (!validateForm()) {
-        showAlert('Please fix all errors before submitting', 'error');
+        showNotification('Please fix all errors before submitting', 'error');
         return;
     }
+    console.log('✅ Form validation passed');
     
     // Check if Supabase is ready
     if (!window.SupabaseDB || !window.SupabaseDB.isReady()) {
-        showAlert('Database connection not available. Please configure Supabase credentials.', 'warning');
-        console.error('Supabase not initialized. Create js/config.js with your credentials.');
+        showNotification('Database connection not available. Please check your Supabase configuration.', 'error');
+        console.error('❌ Supabase not initialized. Create js/config.js with your credentials.');
         return;
     }
+    console.log('✅ Database connection verified');
     
-    // Show loading state
+    // Step 1: Show loading state
     showLoadingState();
+    disableForm();
     
     try {
-        // Collect form data
+        // Step 2: Collect form data
+        console.log('\n📋 Step 2: Collecting form data...');
         const formData = collectFormData();
+        console.log('✅ Form data collected:', {
+            event: formData.event.name,
+            participants: formData.participants.length
+        });
         
-        console.log('📝 Submitting form data:', formData);
+        // Step 3-8: Save everything and send emails
+        console.log('\n💾 Steps 3-8: Processing event creation...');
+        const result = await saveToSupabase(formData);
         
-        // Save to Supabase
-        await saveToSupabase(formData);
+        // Step 9: Show success message with confetti
+        console.log('\n🎉 Step 9: Showing success notification...');
+        const emailStatus = result.emailResults 
+            ? `Emails sent: ${result.emailResults.successful}/${result.emailResults.total}` 
+            : 'Email notifications disabled';
         
-        // Show success message
-        showAlert('Secret Santa event created successfully! 🎉', 'success');
+        showSuccessNotification(
+            `Secret Santa event "${result.event.event_name}" created successfully!`,
+            `${result.participants.length} participants • ${result.assignments.length} assignments • ${emailStatus}`
+        );
         
-        // Reset form after delay
+        // Step 10: Reset form or show "Create Another" option
+        console.log('\n🔄 Step 10: Resetting form...');
         setTimeout(() => {
+            enableForm();
             form.reset();
             resetToDefaultState();
-        }, 2000);
+            hideLoadingState();
+            console.log('✅ Form reset complete');
+            console.log('═'.repeat(60));
+            console.log('Ready to create another event! 🎅');
+        }, 3000);
         
     } catch (error) {
-        console.error('❌ Error submitting form:', error);
-        showAlert(`Error creating event: ${error.message}`, 'error');
-    } finally {
+        console.error('\n❌ ERROR DURING SUBMISSION:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        
+        // Show user-friendly error message based on error type
+        let errorMessage = 'Failed to create Secret Santa event.';
+        let errorDetails = error.message;
+        
+        if (error.message.includes('Supabase')) {
+            errorMessage = 'Database Error';
+            errorDetails = 'Could not save to database. Please check your connection.';
+        } else if (error.message.includes('email')) {
+            errorMessage = 'Email Error';
+            errorDetails = 'Event created but emails failed to send. Notify participants manually.';
+        } else if (error.message.includes('assignment')) {
+            errorMessage = 'Assignment Error';
+            errorDetails = 'Could not generate assignments. Please try again.';
+        }
+        
+        showNotification(`${errorMessage}: ${errorDetails}`, 'error');
+        
+        // Re-enable form so user can try again
+        enableForm();
         hideLoadingState();
+        
+        console.log('═'.repeat(60));
     }
 }
 
@@ -677,6 +726,63 @@ function hideLoadingState() {
 }
 
 /**
+ * Disables the entire form during submission
+ */
+function disableForm() {
+    console.log('🔒 Disabling form...');
+    
+    // Disable all inputs
+    const allInputs = form.querySelectorAll('input, textarea, button');
+    allInputs.forEach(input => {
+        input.disabled = true;
+        input.style.opacity = '0.6';
+        input.style.cursor = 'not-allowed';
+    });
+    
+    // Add loading overlay to form
+    const formSections = form.querySelectorAll('.bg-white');
+    formSections.forEach(section => {
+        section.style.opacity = '0.7';
+        section.style.pointerEvents = 'none';
+    });
+}
+
+/**
+ * Re-enables the form after submission
+ */
+function enableForm() {
+    console.log('🔓 Re-enabling form...');
+    
+    // Re-enable all inputs
+    const allInputs = form.querySelectorAll('input, textarea');
+    allInputs.forEach(input => {
+        input.disabled = false;
+        input.style.opacity = '1';
+        input.style.cursor = '';
+    });
+    
+    // Re-enable buttons except remove buttons that should be disabled
+    const buttons = form.querySelectorAll('button');
+    buttons.forEach(button => {
+        if (!button.classList.contains('remove-participant') || participantCount > MIN_PARTICIPANTS) {
+            button.disabled = false;
+        }
+        button.style.opacity = '1';
+        button.style.cursor = '';
+    });
+    
+    // Remove loading overlay
+    const formSections = form.querySelectorAll('.bg-white');
+    formSections.forEach(section => {
+        section.style.opacity = '1';
+        section.style.pointerEvents = '';
+    });
+    
+    // Update remove buttons state
+    updateRemoveButtons();
+}
+
+/**
  * Resets form to default state with 3 participants
  */
 function resetToDefaultState() {
@@ -693,14 +799,14 @@ function resetToDefaultState() {
 }
 
 // ==============================================
-// ALERT SYSTEM
+// NOTIFICATION SYSTEM
 // ==============================================
 
 /**
- * Shows an alert message
+ * Shows a standard notification message
  */
-function showAlert(message, type = 'info') {
-    // Remove existing alerts
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
     const existingAlert = document.querySelector('.custom-alert');
     if (existingAlert) {
         existingAlert.remove();
@@ -753,6 +859,67 @@ function showAlert(message, type = 'info') {
         alert.style.transform = 'translateY(-20px)';
         setTimeout(() => alert.remove(), 300);
     }, 5000);
+}
+
+/**
+ * Shows a success notification with confetti and details
+ */
+function showSuccessNotification(title, details = '') {
+    // Remove existing notifications
+    const existingAlert = document.querySelector('.success-banner');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    // Create success banner
+    const banner = document.createElement('div');
+    banner.className = 'success-banner fixed top-0 left-0 right-0 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 shadow-2xl z-50 transition-all duration-500 transform';
+    banner.style.transform = 'translateY(-100%)';
+    
+    banner.innerHTML = `
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="text-5xl animate-bounce">🎉</div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-1">${title}</h3>
+                        ${details ? `<p class="text-green-100">${details}</p>` : ''}
+                    </div>
+                </div>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-white hover:text-green-100 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-3 flex space-x-2">
+                <span class="text-4xl">🎅</span>
+                <span class="text-4xl">🎁</span>
+                <span class="text-4xl">🎄</span>
+                <span class="text-4xl">⭐</span>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(banner);
+    
+    // Animate in
+    setTimeout(() => {
+        banner.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Auto remove after 8 seconds
+    setTimeout(() => {
+        banner.style.transform = 'translateY(-100%)';
+        setTimeout(() => banner.remove(), 500);
+    }, 8000);
+}
+
+/**
+ * Legacy function for backward compatibility
+ */
+function showAlert(message, type = 'info') {
+    showNotification(message, type);
 }
 
 // ==============================================
