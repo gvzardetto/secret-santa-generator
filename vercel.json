@@ -1,22 +1,5 @@
 {
   "version": 2,
-  "name": "secret-santa-generator",
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    }
-  ],
-  "env": {
-    "RESEND_API_KEY": "@resend-api-key",
-    "FROM_EMAIL": "onboarding@resend.dev",
-    "FROM_NAME": "Secret Santa Generator"
-  }
+  "name": "secret-santa-generator"
 }
 
