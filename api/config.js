@@ -1,8 +1,8 @@
 // Vercel Serverless Function - Config Endpoint
-// Returns Supabase configuration from environment variables
+// Returns Supabase AND Email configuration from environment variables
 
 /**
- * This function provides Supabase configuration to the frontend
+ * This function provides configuration to the frontend
  * Environment variables are stored securely on Vercel
  * This avoids committing credentials to Git
  */
@@ -24,23 +24,43 @@ export default async function handler(req, res) {
     }
     
     try {
-        // Get Supabase credentials from environment
+        // Get all configuration from environment
         const SUPABASE_URL = process.env.SUPABASE_URL;
         const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+        const RESEND_API_KEY = process.env.RESEND_API_KEY;
+        const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+        const FROM_NAME = process.env.FROM_NAME || 'Secret Santa Generator';
         
-        // Check if configured
-        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-            console.error('❌ Supabase environment variables not set');
-            return res.status(500).json({ 
-                error: 'Supabase not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY in Vercel environment variables.' 
-            });
+        // Build response
+        const config = {};
+        
+        // Supabase config
+        if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+            config.supabase = {
+                url: SUPABASE_URL,
+                anonKey: SUPABASE_ANON_KEY
+            };
+        } else {
+            console.warn('⚠️ Supabase environment variables not set');
         }
         
-        // Return config (safe because anon key is meant to be public)
-        return res.status(200).json({
-            url: SUPABASE_URL,
-            anonKey: SUPABASE_ANON_KEY
-        });
+        // Email config (we don't expose the actual API key to browser)
+        // The browser will call /api/send-emails instead
+        if (RESEND_API_KEY) {
+            config.email = {
+                configured: true,
+                fromEmail: FROM_EMAIL,
+                fromName: FROM_NAME
+            };
+        } else {
+            console.warn('⚠️ Email (RESEND_API_KEY) environment variable not set');
+            config.email = {
+                configured: false
+            };
+        }
+        
+        // Return config
+        return res.status(200).json(config);
         
     } catch (error) {
         console.error('❌ Config endpoint error:', error);

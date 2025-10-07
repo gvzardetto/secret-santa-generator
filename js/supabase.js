@@ -39,9 +39,16 @@ async function initializeSupabase() {
                 
                 if (response.ok) {
                     const config = await response.json();
-                    url = config.url;
-                    anonKey = config.anonKey;
-                    console.log('✅ Config loaded from API endpoint');
+                    
+                    // Handle new config structure
+                    if (config.supabase) {
+                        url = config.supabase.url;
+                        anonKey = config.supabase.anonKey;
+                        console.log('✅ Config loaded from API endpoint');
+                    } else {
+                        console.error('❌ Supabase config not found in API response');
+                        return false;
+                    }
                 } else {
                     const error = await response.json();
                     console.error('❌ Failed to load config from API:', error.error);

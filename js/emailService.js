@@ -12,26 +12,52 @@ const RESEND_API_ENDPOINT = 'https://api.resend.com/emails'; // Direct (has CORS
 
 /**
  * Checks if email service is configured
+ * Loads from API endpoint if not found locally (for Vercel deployment)
+ */
+async function loadEmailConfig() {
+    // Try local config first
+    if (window.EMAIL_CONFIG && window.EMAIL_CONFIG.resendApiKey && 
+        !window.EMAIL_CONFIG.resendApiKey.includes('your_resend_api_key')) {
+        console.log('✅ Email config loaded from local file');
+        return true;
+    }
+    
+    // Try API endpoint (for Vercel)
+    try {
+        console.log('📍 Loading email config from API endpoint...');
+        const response = await fetch('/api/config');
+        
+        if (response.ok) {
+            const config = await response.json();
+            
+            if (config.email && config.email.configured) {
+                // Store in window for compatibility
+                window.EMAIL_CONFIG = {
+                    resendApiKey: 'configured', // Not exposed to browser
+                    fromEmail: config.email.fromEmail,
+                    fromName: config.email.fromName
+                };
+                console.log('✅ Email config loaded from API endpoint');
+                return true;
+            } else {
+                console.warn('⚠️ Email service not configured on server');
+                return false;
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Could not load email config from API:', error.message);
+    }
+    
+    return false;
+}
+
+/**
+ * Checks if email service is configured (synchronous check)
  */
 function isEmailConfigured() {
-    if (!window.EMAIL_CONFIG) {
-        console.warn('⚠️ Email configuration not found');
-        return false;
-    }
-    
-    const { resendApiKey, fromEmail } = window.EMAIL_CONFIG;
-    
-    if (!resendApiKey || resendApiKey.includes('your_resend_api_key')) {
-        console.warn('⚠️ Resend API key not configured');
-        return false;
-    }
-    
-    if (!fromEmail || fromEmail.includes('yourdomain.com')) {
-        console.warn('⚠️ From email not configured');
-        return false;
-    }
-    
-    return true;
+    // Email is configured if we're using serverless function
+    // The actual API key is on the server, not exposed to browser
+    return window.EMAIL_CONFIG && window.EMAIL_CONFIG.fromEmail;
 }
 
 // ==============================================
@@ -659,6 +685,7 @@ async function testEmailService(testEmail = 'test@example.com') {
 window.EmailService = {
     // Configuration
     isConfigured: isEmailConfigured,
+    loadConfig: loadEmailConfig,
     
     // Sending functions
     sendParticipantEmail: sendParticipantEmail,
@@ -668,6 +695,21 @@ window.EmailService = {
     // Utilities
     testEmailService: testEmailService
 };
+
+// ==============================================
+// AUTO-INITIALIZATION
+// ==============================================
+
+// Load email config on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadEmailConfig();
+    });
+} else {
+    loadEmailConfig().catch(err => {
+        console.error('Failed to load email config:', err);
+    });
+}
 
 console.log('📧 Email service module loaded');
 
