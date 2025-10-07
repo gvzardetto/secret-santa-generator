@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Santa Assignment Algorithm Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fca5a5 100%);
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        h1 {
+            color: #DC2626;
+            text-align: center;
+            border-bottom: 3px solid #DC2626;
+            padding-bottom: 15px;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #059669;
+        }
+        button {
+            background: #DC2626;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #B91C1C;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        button.secondary {
+            background: #059669;
+        }
+        button.secondary:hover {
+            background: #047857;
+        }
+        .result-section {
+            margin: 30px 0;
+        }
+        .assignment-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .assignment-card:hover {
+            border-color: #DC2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+        }
+        .giver {
+            font-size: 18px;
+            font-weight: bold;
+            color: #DC2626;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #059669;
+            margin: 10px 0;
+        }
+        .receiver {
+            font-size: 18px;
+            font-weight: bold;
+            color: #059669;
+        }
+        .wish-list {
+            font-style: italic;
+            color: #6B7280;
+            margin-top: 8px;
+            padding: 8px;
+            background: #F3F4F6;
+            border-radius: 4px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .validation {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .validation.pass {
+            background: #d4edda;
+            border: 2px solid #059669;
+            color: #155724;
+        }
+        .validation.fail {
+            background: #f8d7da;
+            border: 2px solid #DC2626;
+            color: #721c24;
+        }
+        .console-output {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .console-output div {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 5px;
+            margin: 0 10px;
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎅 Secret Santa Assignment Algorithm Test 🎁</h1>
+        
+        <div class="controls">
+            <h3>Test Configuration</h3>
+            <label>
+                Number of Participants:
+                <input type="number" id="participantCount" min="3" max="20" value="5">
+            </label>
+            <br><br>
+            <button onclick="generateTestAssignments()">🎲 Generate Assignments</button>
+            <button class="secondary" onclick="runMultipleTests()">🔄 Run 10 Tests</button>
+            <button class="secondary" onclick="clearResults()">🗑️ Clear Results</button>
+        </div>
+
+        <div id="statsSection"></div>
+        <div id="validationSection"></div>
+        <div id="assignmentsSection"></div>
+        <div id="consoleSection"></div>
+    </div>
+
+    <script>
+        // Copy the algorithm functions from app.js
+        
+        /**
+         * Fisher-Yates shuffle algorithm
+         */
+        function shuffleArray(array) {
+            console.log('🎲 Shuffling array with Fisher-Yates algorithm...');
+            
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            
+            console.log('✅ Array shuffled successfully');
+            return array;
+        }
+
+        /**
+         * Generates Secret Santa assignments using circular assignment
+         */
+        function generateAssignments(participants) {
+            console.log('🎁 Generating Secret Santa assignments...');
+            console.log(`📊 Participants to assign: ${participants.length}`);
+            
+            try {
+                if (!Array.isArray(participants)) {
+                    throw new Error('Participants must be an array');
+                }
+                
+                if (participants.length < 3) {
+                    throw new Error('Need at least 3 participants for Secret Santa');
+                }
+                
+                participants.forEach((p, index) => {
+                    if (!p.id || !p.name || !p.email) {
+                        throw new Error(`Participant at index ${index} is missing required fields`);
+                    }
+                });
+                
+                const shuffled = [...participants];
+                shuffleArray(shuffled);
+                
+                console.log('📋 Shuffled order:', shuffled.map(p => p.name).join(' → '));
+                
+                const assignments = [];
+                
+                for (let i = 0; i < shuffled.length; i++) {
+                    const giver = shuffled[i];
+                    const receiver = shuffled[(i + 1) % shuffled.length];
+                    
+                    const assignment = {
+                        participantId: giver.id,
+                        assignedToId: receiver.id,
+                        assignedToName: receiver.name,
+                        assignedToEmail: receiver.email,
+                        assignedToWishList: receiver.wish_list || null,
+                        giverName: giver.name // For display purposes
+                    };
+                    
+                    assignments.push(assignment);
+                    console.log(`  🎁 ${giver.name} → ${receiver.name}`);
+                }
+                
+                validateAssignments(assignments, participants);
+                
+                console.log('✅ Assignments generated successfully!');
+                console.log(`📊 Total assignments: ${assignments.length}`);
+                
+                return assignments;
+                
+            } catch (error) {
+                console.error('❌ Error generating assignments:', error.message);
+                throw error;
+            }
+        }
+
+        /**
+         * Validates that assignments are correct
+         */
+        function validateAssignments(assignments, participants) {
+            console.log('🔍 Validating assignments...');
+            
+            const givers = new Set();
+            const receivers = new Set();
+            
+            assignments.forEach((assignment, index) => {
+                if (assignment.participantId === assignment.assignedToId) {
+                    throw new Error(`Assignment ${index}: Participant cannot be assigned to themselves!`);
+                }
+                
+                givers.add(assignment.participantId);
+                receivers.add(assignment.assignedToId);
+            });
+            
+            if (givers.size !== participants.length) {
+                throw new Error(`Not all participants are giving! Expected ${participants.length}, got ${givers.size}`);
+            }
+            
+            if (receivers.size !== participants.length) {
+                throw new Error(`Not all participants are receiving! Expected ${participants.length}, got ${receivers.size}`);
+            }
+            
+            const allParticipantIds = new Set(participants.map(p => p.id));
+            givers.forEach(id => {
+                if (!allParticipantIds.has(id)) {
+                    throw new Error(`Unknown giver ID: ${id}`);
+                }
+            });
+            
+            console.log('✅ Assignment validation passed!');
+            console.log(`  - ${givers.size} unique givers`);
+            console.log(`  - ${receivers.size} unique receivers`);
+            console.log('  - No self-assignments');
+        }
+
+        // Test data generation
+        const sampleNames = [
+            'Alice Johnson', 'Bob Smith', 'Carol White', 'David Brown', 'Emma Davis',
+            'Frank Miller', 'Grace Wilson', 'Henry Moore', 'Ivy Taylor', 'Jack Anderson',
+            'Kate Thomas', 'Leo Jackson', 'Maria Harris', 'Nathan Martin', 'Olivia Thompson',
+            'Paul Garcia', 'Quinn Martinez', 'Rachel Robinson', 'Sam Clark', 'Tara Lewis'
+        ];
+
+        const sampleWishLists = [
+            'Books, Coffee, Plants',
+            'Tech gadgets, Video games',
+            'Art supplies, Music',
+            'Cooking tools, Recipe books',
+            'Sports equipment, Outdoor gear',
+            'Board games, Puzzles',
+            'Fashion accessories, Jewelry',
+            'Home decor, Candles',
+            null, // Some people don't provide wish lists
+            'Tools, DIY supplies'
+        ];
+
+        function generateMockParticipants(count) {
+            const participants = [];
+            for (let i = 0; i < count; i++) {
+                const name = sampleNames[i % sampleNames.length];
+                participants.push({
+                    id: `uuid-${i + 1}`,
+                    name: count > sampleNames.length ? `${name} ${i}` : name,
+                    email: `${name.split(' ')[0].toLowerCase()}${i}@example.com`,
+                    wish_list: sampleWishLists[i % sampleWishLists.length]
+                });
+            }
+            return participants;
+        }
+
+        let consoleLog = [];
+
+        // Override console.log for display
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleLog.push(args.join(' '));
+        };
+
+        function generateTestAssignments() {
+            consoleLog = [];
+            const count = parseInt(document.getElementById('participantCount').value);
+            
+            if (count < 3) {
+                alert('Need at least 3 participants!');
+                return;
+            }
+
+            try {
+                const participants = generateMockParticipants(count);
+                const assignments = generateAssignments(participants);
+                
+                displayStats(participants, assignments);
+                displayValidation(true, 'All validation checks passed!');
+                displayAssignments(assignments);
+                displayConsole();
+                
+            } catch (error) {
+                displayValidation(false, error.message);
+                displayConsole();
+            }
+        }
+
+        function displayStats(participants, assignments) {
+            const html = `
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">${participants.length}</div>
+                        <div class="stat-label">Participants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${assignments.length}</div>
+                        <div class="stat-label">Assignments</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('statsSection').innerHTML = html;
+        }
+
+        function displayValidation(passed, message) {
+            const html = `
+                <div class="validation ${passed ? 'pass' : 'fail'}">
+                    <h3>${passed ? '✅' : '❌'} Validation ${passed ? 'Passed' : 'Failed'}</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            document.getElementById('validationSection').innerHTML = html;
+        }
+
+        function displayAssignments(assignments) {
+            let html = '<div class="result-section"><h2>🎁 Secret Santa Assignments</h2>';
+            
+            assignments.forEach((assignment, index) => {
+                html += `
+                    <div class="assignment-card">
+                        <div class="giver">🎅 ${assignment.giverName}</div>
+                        <div class="arrow">↓ gives to ↓</div>
+                        <div class="receiver">🎁 ${assignment.assignedToName}</div>
+                        ${assignment.assignedToWishList ? 
+                            `<div class="wish-list">💝 Wish List: ${assignment.assignedToWishList}</div>` : 
+                            '<div class="wish-list">💝 No wish list provided</div>'}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            document.getElementById('assignmentsSection').innerHTML = html;
+        }
+
+        function displayConsole() {
+            let html = '<h3>📋 Console Log</h3><div class="console-output">';
+            consoleLog.forEach(log => {
+                html += `<div>${log}</div>`;
+            });
+            html += '</div>';
+            document.getElementById('consoleSection').innerHTML = html;
+        }
+
+        function runMultipleTests() {
+            const count = parseInt(document.getElementById('participantCount').value);
+            consoleLog = [];
+            
+            console.log('🔄 Running 10 test iterations...');
+            console.log('═'.repeat(60));
+            
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (let i = 1; i <= 10; i++) {
+                try {
+                    console.log(`\nTest ${i}/10:`);
+                    const participants = generateMockParticipants(count);
+                    const assignments = generateAssignments(participants);
+                    successCount++;
+                    console.log(`✅ Test ${i} PASSED`);
+                } catch (error) {
+                    failCount++;
+                    console.log(`❌ Test ${i} FAILED: ${error.message}`);
+                }
+            }
+            
+            console.log('\n' + '═'.repeat(60));
+            console.log(`📊 Test Results:`);
+            console.log(`✅ Passed: ${successCount}/10`);
+            console.log(`❌ Failed: ${failCount}/10`);
+            console.log(`📈 Success Rate: ${(successCount/10*100).toFixed(0)}%`);
+            
+            displayConsole();
+            displayValidation(failCount === 0, `${successCount} out of 10 tests passed`);
+        }
+
+        function clearResults() {
+            document.getElementById('statsSection').innerHTML = '';
+            document.getElementById('validationSection').innerHTML = '';
+            document.getElementById('assignmentsSection').innerHTML = '';
+            document.getElementById('consoleSection').innerHTML = '';
+            consoleLog = [];
+        }
+
+        // Run initial test
+        window.addEventListener('load', () => {
+            setTimeout(generateTestAssignments, 500);
+        });
+    </script>
+</body>
+</html>
+

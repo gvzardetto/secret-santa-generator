@@ -315,6 +315,164 @@ function updateSubmitButton(isValid) {
 }
 
 // ==============================================
+// SECRET SANTA ASSIGNMENT ALGORITHM
+// ==============================================
+
+/**
+ * Fisher-Yates shuffle algorithm
+ * Randomly shuffles an array in place
+ * 
+ * @param {Array} array - Array to shuffle
+ * @returns {Array} Shuffled array (same reference)
+ */
+function shuffleArray(array) {
+    console.log('🎲 Shuffling array with Fisher-Yates algorithm...');
+    
+    for (let i = array.length - 1; i > 0; i--) {
+        // Generate random index from 0 to i
+        const j = Math.floor(Math.random() * (i + 1));
+        
+        // Swap elements at positions i and j
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    
+    console.log('✅ Array shuffled successfully');
+    return array;
+}
+
+/**
+ * Generates Secret Santa assignments using circular assignment
+ * Ensures everyone gives and receives exactly one gift
+ * No one is assigned to themselves
+ * 
+ * @param {Array<Object>} participants - Array of participant objects
+ * @param {string} participants[].id - Participant UUID
+ * @param {string} participants[].name - Participant name
+ * @param {string} participants[].email - Participant email
+ * @param {string|null} participants[].wish_list - Optional wish list
+ * @returns {Array<Object>} Array of assignment objects
+ * @throws {Error} If participants array is invalid or too small
+ */
+function generateAssignments(participants) {
+    console.log('🎁 Generating Secret Santa assignments...');
+    console.log(`📊 Participants to assign: ${participants.length}`);
+    
+    try {
+        // Validation
+        if (!Array.isArray(participants)) {
+            throw new Error('Participants must be an array');
+        }
+        
+        if (participants.length < 3) {
+            throw new Error('Need at least 3 participants for Secret Santa');
+        }
+        
+        // Verify all participants have required fields
+        participants.forEach((p, index) => {
+            if (!p.id || !p.name || !p.email) {
+                throw new Error(`Participant at index ${index} is missing required fields`);
+            }
+        });
+        
+        // Create a copy to avoid mutating original array
+        const shuffled = [...participants];
+        
+        // Shuffle the participants randomly
+        shuffleArray(shuffled);
+        
+        console.log('📋 Shuffled order:', shuffled.map(p => p.name).join(' → '));
+        
+        // Create circular assignments
+        // Person 0 gives to Person 1
+        // Person 1 gives to Person 2
+        // ...
+        // Person n-1 gives to Person 0
+        const assignments = [];
+        
+        for (let i = 0; i < shuffled.length; i++) {
+            const giver = shuffled[i];
+            const receiver = shuffled[(i + 1) % shuffled.length]; // Wrap around to 0 at the end
+            
+            const assignment = {
+                participantId: giver.id,
+                assignedToId: receiver.id,
+                assignedToName: receiver.name,
+                assignedToEmail: receiver.email,
+                assignedToWishList: receiver.wish_list || null
+            };
+            
+            assignments.push(assignment);
+            
+            console.log(`  🎁 ${giver.name} → ${receiver.name}`);
+        }
+        
+        // Verify assignments are valid
+        validateAssignments(assignments, participants);
+        
+        console.log('✅ Assignments generated successfully!');
+        console.log(`📊 Total assignments: ${assignments.length}`);
+        
+        return assignments;
+        
+    } catch (error) {
+        console.error('❌ Error generating assignments:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Validates that assignments are correct
+ * Checks for:
+ * - Everyone gives exactly once
+ * - Everyone receives exactly once
+ * - No self-assignments
+ * 
+ * @param {Array<Object>} assignments - Array of assignment objects
+ * @param {Array<Object>} participants - Original participants array
+ * @throws {Error} If validation fails
+ */
+function validateAssignments(assignments, participants) {
+    console.log('🔍 Validating assignments...');
+    
+    const givers = new Set();
+    const receivers = new Set();
+    
+    assignments.forEach((assignment, index) => {
+        // Check for self-assignment
+        if (assignment.participantId === assignment.assignedToId) {
+            throw new Error(`Assignment ${index}: Participant cannot be assigned to themselves!`);
+        }
+        
+        // Track givers and receivers
+        givers.add(assignment.participantId);
+        receivers.add(assignment.assignedToId);
+    });
+    
+    // Verify everyone gives exactly once
+    if (givers.size !== participants.length) {
+        throw new Error(`Not all participants are giving! Expected ${participants.length}, got ${givers.size}`);
+    }
+    
+    // Verify everyone receives exactly once
+    if (receivers.size !== participants.length) {
+        throw new Error(`Not all participants are receiving! Expected ${participants.length}, got ${receivers.size}`);
+    }
+    
+    // Verify all participant IDs are accounted for
+    const allParticipantIds = new Set(participants.map(p => p.id));
+    givers.forEach(id => {
+        if (!allParticipantIds.has(id)) {
+            throw new Error(`Unknown giver ID: ${id}`);
+        }
+    });
+    
+    console.log('✅ Assignment validation passed!');
+    console.log(`  - ${givers.size} unique givers`);
+    console.log(`  - ${receivers.size} unique receivers`);
+    console.log('  - No self-assignments');
+}
+
+// ==============================================
 // FORM SUBMISSION
 // ==============================================
 
@@ -398,32 +556,57 @@ function collectFormData() {
 /**
  * Saves event and participants to Supabase
  * @param {Object} formData - Form data collected from collectFormData()
- * @returns {Promise<Object>} Object containing event and participants data
+ * @returns {Promise<Object>} Object containing event, participants, and assignments
  */
 async function saveToSupabase(formData) {
     console.log('💾 Starting Supabase save operation...');
+    console.log('═'.repeat(60));
     
     try {
         // Step 1: Save the event
-        console.log('Step 1: Saving event...');
+        console.log('📝 Step 1: Saving event...');
         const savedEvent = await window.SupabaseDB.saveEvent(formData.event);
         console.log('✅ Event saved with ID:', savedEvent.id);
+        console.log('');
         
         // Step 2: Save participants
-        console.log('Step 2: Saving participants...');
+        console.log('👥 Step 2: Saving participants...');
         const savedParticipants = await window.SupabaseDB.saveParticipants(
             savedEvent.id,
             formData.participants
         );
         console.log('✅ Participants saved:', savedParticipants.length);
+        savedParticipants.forEach((p, i) => {
+            console.log(`  ${i + 1}. ${p.name} (${p.email})`);
+        });
+        console.log('');
         
-        // Step 3: Generate and save assignments (future enhancement)
-        // For now, assignments will be generated later
-        console.log('ℹ️ Assignment generation will be implemented in next phase');
+        // Step 3: Generate Secret Santa assignments
+        console.log('🎲 Step 3: Generating Secret Santa assignments...');
+        const assignments = generateAssignments(savedParticipants);
+        console.log('✅ Assignments generated successfully!');
+        console.log('');
+        
+        // Step 4: Save assignments to database
+        console.log('💾 Step 4: Saving assignments to database...');
+        const savedAssignments = await window.SupabaseDB.updateAssignments(assignments);
+        console.log('✅ Assignments saved:', savedAssignments.length);
+        console.log('');
+        
+        // Final summary
+        console.log('═'.repeat(60));
+        console.log('🎉 SECRET SANTA EVENT CREATED SUCCESSFULLY! 🎉');
+        console.log('═'.repeat(60));
+        console.log(`📋 Event: ${savedEvent.event_name}`);
+        console.log(`📅 Date: ${savedEvent.exchange_date}`);
+        console.log(`👥 Participants: ${savedParticipants.length}`);
+        console.log(`🎁 Assignments: ${savedAssignments.length}`);
+        console.log('═'.repeat(60));
         
         return {
             event: savedEvent,
-            participants: savedParticipants
+            participants: savedParticipants,
+            assignments: savedAssignments
         };
         
     } catch (error) {
