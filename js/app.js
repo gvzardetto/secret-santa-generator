@@ -593,6 +593,41 @@ async function saveToSupabase(formData) {
         console.log('✅ Assignments saved:', savedAssignments.length);
         console.log('');
         
+        // Step 5: Send notification emails
+        console.log('📬 Step 5: Sending notification emails...');
+        let emailResults = null;
+        
+        if (window.EmailService && window.EmailService.isConfigured()) {
+            try {
+                // Prepare event data for emails
+                const eventDataForEmail = {
+                    eventName: savedEvent.event_name,
+                    exchangeDate: savedEvent.exchange_date,
+                    budget: savedEvent.budget
+                };
+                
+                // Send emails to all participants
+                emailResults = await window.EmailService.sendAllEmails(
+                    savedParticipants,
+                    assignments,
+                    eventDataForEmail,
+                    formData.event.organizerEmail
+                );
+                
+                console.log('✅ Emails sent successfully!');
+                console.log(`   Delivered: ${emailResults.successful}/${emailResults.total}`);
+                
+            } catch (emailError) {
+                console.warn('⚠️ Email sending failed, but event was created successfully');
+                console.warn('   Error:', emailError.message);
+                console.warn('   You can manually notify participants or retry later');
+            }
+        } else {
+            console.log('ℹ️ Email service not configured - skipping email notifications');
+            console.log('   To enable emails, configure js/emailConfig.js with your Resend API key');
+        }
+        console.log('');
+        
         // Final summary
         console.log('═'.repeat(60));
         console.log('🎉 SECRET SANTA EVENT CREATED SUCCESSFULLY! 🎉');
@@ -601,12 +636,16 @@ async function saveToSupabase(formData) {
         console.log(`📅 Date: ${savedEvent.exchange_date}`);
         console.log(`👥 Participants: ${savedParticipants.length}`);
         console.log(`🎁 Assignments: ${savedAssignments.length}`);
+        if (emailResults) {
+            console.log(`📧 Emails Sent: ${emailResults.successful}/${emailResults.total}`);
+        }
         console.log('═'.repeat(60));
         
         return {
             event: savedEvent,
             participants: savedParticipants,
-            assignments: savedAssignments
+            assignments: savedAssignments,
+            emailResults: emailResults
         };
         
     } catch (error) {

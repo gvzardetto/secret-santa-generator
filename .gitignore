@@ -8,6 +8,9 @@ node_modules/
 # Supabase config (contains credentials)
 js/config.js
 
+# Email config (contains API keys)
+js/emailConfig.js
+
 # OS files
 .DS_Store
 Thumbs.db

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.connected {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.disconnected {
+            background: #f44336;
+            color: white;
+        }
+        .actions {
+            margin: 20px 0;
+        }
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Supabase Connection Test</h1>
+        <p>This page will test your Supabase connection and run basic database queries.</p>
+
+        <!-- Status Section -->
+        <div class="test-section">
+            <h3>Connection Status</h3>
+            <p>
+                Supabase Client: 
+                <span id="clientStatus" class="status disconnected">Not Initialized</span>
+            </p>
+            <p>
+                Project: <strong id="projectUrl">Checking...</strong>
+            </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button onclick="testConnection()">Test Connection</button>
+            <button onclick="testTableStructure()">Check Tables</button>
+            <button onclick="createTestEvent()">Create Test Event</button>
+            <button onclick="queryTestEvents()">Query Test Events</button>
+            <button onclick="cleanupTestData()">Cleanup Test Data</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+        </div>
+
+        <!-- Results -->
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <!-- Load Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase.js"></script>
+
+    <script>
+        // Wait for everything to load
+        window.addEventListener('load', () => {
+            setTimeout(checkInitialization, 500);
+        });
+
+        function checkInitialization() {
+            const clientStatus = document.getElementById('clientStatus');
+            const projectUrl = document.getElementById('projectUrl');
+
+            if (window.SupabaseDB && window.SupabaseDB.isReady()) {
+                clientStatus.textContent = 'Connected ✓';
+                clientStatus.className = 'status connected';
+                projectUrl.textContent = window.SUPABASE_CONFIG.url;
+                logResult('✅ Supabase initialized successfully!', 'success');
+            } else {
+                clientStatus.textContent = 'Disconnected ✗';
+                clientStatus.className = 'status disconnected';
+                projectUrl.textContent = 'Not Connected';
+                logResult('❌ Supabase not initialized. Check console for errors.', 'error');
+            }
+        }
+
+        function logResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testConnection() {
+            clearResults();
+            logResult('🔌 Testing Supabase connection...', 'info');
+            
+            try {
+                const isConnected = await window.SupabaseDB.testConnection();
+                
+                if (isConnected) {
+                    logResult('✅ Connection test PASSED!', 'success');
+                    logResult('Database is accessible and responding.', 'success');
+                } else {
+                    logResult('❌ Connection test FAILED!', 'error');
+                    logResult('Check your configuration and network connection.', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTableStructure() {
+            clearResults();
+            logResult('📋 Checking database tables...', 'info');
+
+            try {
+                const client = window.SupabaseDB.getClient();
+
+                // Check events table
+                logResult('Checking "events" table...', 'info');
+                const { data: events, error: eventsError } = await client
+                    .from('events')
+                    .select('*')
+                    .limit(1);
+
+                if (eventsError) {
+                    logResult(`❌ Events table error: ${eventsError.message}`, 'error');
+                } else {
+                    logResult('✅ Events table exists and is accessible', 'success');
+                }
+
+                // Check participants table
+                logResult('Checking "participants" table...', 'info');
+                const { data: participants, error: participantsError } = await client
+                    .from('participants')
+                    .select('*')
+                    .limit(1);
+
+                if (participantsError) {
+                    logResult(`❌ Participants table error: ${participantsError.message}`, 'error');
+                } else {
+                    logResult('✅ Participants table exists and is accessible', 'success');
+                }
+
+                // Get row counts
+                const { count: eventCount } = await client
+                    .from('events')
+                    .select('*', { count: 'exact', head: true });
+
+                const { count: participantCount } = await client
+                    .from('participants')
+                    .select('*', { count: 'exact', head: true });
+
+                logResult(`\nDatabase Statistics:`, 'info');
+                logResult(`📊 Events: ${eventCount || 0} records`, 'info');
+                logResult(`📊 Participants: ${participantCount || 0} records`, 'info');
+
+            } catch (error) {
+                logResult(`❌ Table check error: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestEvent() {
+            clearResults();
+            logResult('🎁 Creating test Secret Santa event...', 'info');
+
+            try {
+                // Create test event
+                const testEventData = {
+                    name: `Test Event ${new Date().toISOString()}`,
+                    exchangeDate: '2025-12-25',
+                    budget: 50.00,
+                    organizerEmail: 'test@example.com'
+                };
+
+                logResult('Creating event...', 'info');
+                const event = await window.SupabaseDB.saveEvent(testEventData);
+                logResult(`✅ Event created with ID: ${event.id}`, 'success');
+                logResult(JSON.stringify(event, null, 2), 'info');
+
+                // Create test participants
+                const testParticipants = [
+                    { name: 'Alice Test', email: 'alice@test.com', wishList: 'Books, Coffee' },
+                    { name: 'Bob Test', email: 'bob@test.com', wishList: 'Games, Tech gadgets' },
+                    { name: 'Carol Test', email: 'carol@test.com', wishList: 'Art supplies' }
+                ];
+
+                logResult('\nCreating participants...', 'info');
+                const participants = await window.SupabaseDB.saveParticipants(event.id, testParticipants);
+                logResult(`✅ Created ${participants.length} participants`, 'success');
+                
+                participants.forEach((p, i) => {
+                    logResult(`  ${i + 1}. ${p.name} (${p.email})`, 'info');
+                });
+
+                logResult('\n🎉 Test event created successfully!', 'success');
+                logResult(`Event ID: ${event.id}`, 'info');
+                logResult('You can view this in Supabase Table Editor', 'info');
+
+            } catch (error) {
+                logResult(`❌ Failed to create test event: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function queryTestEvents() {
+            clearResults();
+            logResult('🔍 Querying test events...', 'info');
+
+            try {
+                const client = window.SupabaseDB.getClient();
+
+                // Get all events
+                const { data: events, error } = await client
+                    .from('events')
+                    .select(`
+                        id,
+                        event_name,
+                        exchange_date,
+                        budget,
+                        organizer_email,
+                        created_at
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) {
+                    logResult(`❌ Query error: ${error.message}`, 'error');
+                    return;
+                }
+
+                logResult(`✅ Found ${events.length} events`, 'success');
+
+                if (events.length === 0) {
+                    logResult('No events found. Create a test event first!', 'info');
+                    return;
+                }
+
+                // Display each event
+                for (const event of events) {
+                    logResult('\n' + '='.repeat(60), 'info');
+                    logResult(`Event: ${event.event_name}`, 'success');
+                    logResult(`ID: ${event.id}`, 'info');
+                    logResult(`Date: ${event.exchange_date}`, 'info');
+                    logResult(`Budget: $${event.budget || 'Not set'}`, 'info');
+                    logResult(`Organizer: ${event.organizer_email}`, 'info');
+                    logResult(`Created: ${new Date(event.created_at).toLocaleString()}`, 'info');
+
+                    // Get participants for this event
+                    const { data: participants } = await client
+                        .from('participants')
+                        .select('name, email, wish_list')
+                        .eq('event_id', event.id);
+
+                    if (participants && participants.length > 0) {
+                        logResult(`\nParticipants (${participants.length}):`, 'info');
+                        participants.forEach((p, i) => {
+                            logResult(`  ${i + 1}. ${p.name} - ${p.email}`, 'info');
+                            if (p.wish_list) {
+                                logResult(`     Wish List: ${p.wish_list}`, 'info');
+                            }
+                        });
+                    }
+                }
+
+            } catch (error) {
+                logResult(`❌ Query error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function cleanupTestData() {
+            if (!confirm('Are you sure you want to delete all test events and participants?')) {
+                return;
+            }
+
+            clearResults();
+            logResult('🧹 Cleaning up test data...', 'info');
+
+            try {
+                const client = window.SupabaseDB.getClient();
+
+                // Delete test events (participants will cascade delete)
+                const { data, error } = await client
+                    .from('events')
+                    .delete()
+                    .like('event_name', 'Test Event%')
+                    .select();
+
+                if (error) {
+                    logResult(`❌ Cleanup error: ${error.message}`, 'error');
+                    return;
+                }
+
+                logResult(`✅ Deleted ${data.length} test events`, 'success');
+                logResult('Participants were automatically deleted (cascade)', 'info');
+
+            } catch (error) {
+                logResult(`❌ Cleanup error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            logResult('🚀 Running comprehensive test suite...', 'info');
+            logResult('='.repeat(60), 'info');
+
+            // Test 1: Connection
+            await testConnection();
+            await sleep(1000);
+
+            // Test 2: Tables
+            logResult('\n' + '='.repeat(60), 'info');
+            await testTableStructure();
+            await sleep(1000);
+
+            // Test 3: Create
+            logResult('\n' + '='.repeat(60), 'info');
+            await createTestEvent();
+            await sleep(1000);
+
+            // Test 4: Query
+            logResult('\n' + '='.repeat(60), 'info');
+            await queryTestEvents();
+
+            logResult('\n' + '='.repeat(60), 'info');
+            logResult('✅ All tests completed!', 'success');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
+
