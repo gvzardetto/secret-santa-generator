@@ -657,7 +657,7 @@ async function saveToSupabase(formData) {
                 budget: savedEvent.budget
             };
             
-            // Send emails - use local testing if on localhost
+            // Send emails - use local testing if on localhost, enhanced service in production
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                 console.log('🧪 LOCAL MODE: Using simulated email service');
                 emailResults = await window.sendAllEmailsLocal(
@@ -667,8 +667,9 @@ async function saveToSupabase(formData) {
                     formData.event.organizerEmail
                 );
             } else {
-                // Send emails via our serverless function (no CORS issues!)
-                emailResults = await window.EmailService.sendAllEmails(
+                // Use enhanced email service with fallback for Resend limitations
+                console.log('📧 PRODUCTION MODE: Using enhanced email service with fallback');
+                emailResults = await window.sendEmailsWithFallback(
                     savedParticipants,
                     assignments,
                     eventDataForEmail,
