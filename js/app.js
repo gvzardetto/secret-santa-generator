@@ -667,9 +667,9 @@ async function saveToSupabase(formData) {
                     formData.event.organizerEmail
                 );
             } else {
-                // Use enhanced email service with fallback for Resend limitations
-                console.log('📧 PRODUCTION MODE: Using enhanced email service with fallback');
-                emailResults = await window.sendEmailsWithFallback(
+                // Use multi-provider email service (SendGrid + Resend fallback)
+                console.log('📧 PRODUCTION MODE: Using multi-provider email service (SendGrid + Resend)');
+                emailResults = await window.sendEmailsMultiProvider(
                     savedParticipants,
                     assignments,
                     eventDataForEmail,
