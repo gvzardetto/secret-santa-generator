@@ -520,14 +520,17 @@ async function handleSubmit(event) {
         
         // Step 9: Show success message with confetti
         console.log('\n🎉 Passo 9: Mostrando notificação de sucesso...');
-        const emailStatus = result.emailResults 
-            ? `E-mails enviados: ${result.emailResults.successful}/${result.emailResults.total}` 
-            : 'E-mails enviados via serverless';
         
-        showSuccessNotification(
-            `Amigo Secreto "${result.event.event_name}" criado com sucesso!`,
-            `${result.participants.length} participantes • ${result.assignments.length} sorteios • ${emailStatus}`
-        );
+        // Show detailed email results if available
+        if (result.emailResults && result.emailResults.length > 0) {
+            showEmailResults(result.emailResults);
+        } else {
+            // Fallback for when email results aren't available
+            showSuccessNotification(
+                `Amigo Secreto "${result.event.event_name}" criado com sucesso!`,
+                `${result.participants.length} participantes • ${result.assignments.length} sorteios • E-mails enviados via serverless`
+            );
+        }
         
         // Step 10: Reset form or show "Create Another" option
         console.log('\n🔄 Passo 10: Resetando formulário...');
@@ -916,6 +919,38 @@ function showSuccessNotification(title, details = '') {
  */
 function showAlert(message, type = 'info') {
     showNotification(message, type);
+}
+
+/**
+ * Show detailed email delivery results
+ */
+function showEmailResults(emailResults) {
+    const successful = emailResults.filter(r => r.success).length;
+    const failed = emailResults.filter(r => !r.success).length;
+    
+    console.log('📊 Resultado dos e-mails:', {
+        total: emailResults.length,
+        successful: successful,
+        failed: failed,
+        details: emailResults
+    });
+    
+    if (failed > 0) {
+        const failedEmails = emailResults.filter(r => !r.success);
+        console.warn('⚠️ E-mails que falharam:', failedEmails);
+        
+        // Show warning about failed emails
+        showNotification(
+            `⚠️ ${successful} e-mails enviados com sucesso, mas ${failed} falharam.`,
+            'warning',
+            `E-mails que falharam: ${failedEmails.map(e => e.to).join(', ')}`
+        );
+    } else {
+        showSuccessNotification(
+            '🎉 Todos os e-mails foram enviados com sucesso!',
+            `✅ ${successful} participantes foram notificados sobre seus sorteios.`
+        );
+    }
 }
 
 // ==============================================

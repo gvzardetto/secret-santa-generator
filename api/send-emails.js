@@ -57,53 +57,80 @@ export default async function handler(req, res) {
         
         console.log(`📧 Processing ${emails.length} email(s)...`);
         
-        // Send all emails
+        // Send all emails with improved error handling
         const results = [];
         
         for (const emailData of emails) {
             try {
-                // Call Resend API from server
+                console.log(`📤 Sending email to: ${emailData.to}`);
+                
+                // Call Resend API from server with improved headers
                 const response = await fetch('https://api.resend.com/emails', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${RESEND_API_KEY}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Amigo-Secreto-Online/1.0'
                     },
                     body: JSON.stringify({
                         from: `${FROM_NAME} <${FROM_EMAIL}>`,
                         to: [emailData.to],
                         subject: emailData.subject,
-                        html: emailData.html
+                        html: emailData.html,
+                        // Add headers to improve delivery
+                        headers: {
+                            'X-Priority': '3',
+                            'X-Mailer': 'Amigo Secreto Online'
+                        }
                     })
                 });
                 
                 const result = await response.json();
                 
                 if (!response.ok) {
-                    console.error(`❌ Failed to send email to ${emailData.to}:`, result);
+                    console.error(`❌ Failed to send email to ${emailData.to}:`, {
+                        status: response.status,
+                        statusText: response.statusText,
+                        error: result
+                    });
+                    
+                    // Categorize the error
+                    let errorCategory = 'unknown';
+                    if (response.status === 422) {
+                        errorCategory = 'invalid_email';
+                    } else if (response.status === 429) {
+                        errorCategory = 'rate_limited';
+                    } else if (response.status >= 500) {
+                        errorCategory = 'server_error';
+                    }
+                    
                     results.push({
                         to: emailData.to,
                         success: false,
-                        error: result.message || 'Failed to send'
+                        error: result.message || 'Failed to send',
+                        errorCategory: errorCategory,
+                        statusCode: response.status
                     });
                 } else {
                     console.log(`✅ Email sent to ${emailData.to}, ID: ${result.id}`);
                     results.push({
                         to: emailData.to,
                         success: true,
-                        id: result.id
+                        id: result.id,
+                        statusCode: response.status
                     });
                 }
                 
-                // Small delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // Longer delay to avoid rate limiting and improve delivery
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
             } catch (error) {
-                console.error(`❌ Error sending email to ${emailData.to}:`, error);
+                console.error(`❌ Network error sending email to ${emailData.to}:`, error);
                 results.push({
                     to: emailData.to,
                     success: false,
-                    error: error.message
+                    error: error.message,
+                    errorCategory: 'network_error'
                 });
             }
         }

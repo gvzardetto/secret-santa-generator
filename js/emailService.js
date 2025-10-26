@@ -89,25 +89,49 @@ function getParticipantEmailTemplate(participantData, assignmentData, eventData)
     
     return `
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="format-detection" content="telephone=no">
+    <title>🎁 Seu Amigo Secreto - ${eventName}</title>
     <style>
+        /* Reset styles for better email client compatibility */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            width: 100% !important;
+            min-width: 100%;
+        }
+        .email-container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
+            background-color: #ffffff;
         }
-        .container {
-            background: white;
-            border-radius: 10px;
+        .content {
             padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .header {
             text-align: center;
@@ -200,54 +224,67 @@ function getParticipantEmailTemplate(participantData, assignmentData, eventData)
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="emoji">🎅🎁</div>
-            <h1>Seu Amigo Secreto</h1>
-        </div>
-        
-        <div class="greeting">
-            <p>Oi, ${name}! 🎄</p>
-            <p>Os sorteios do Amigo Secreto foram realizados e você foi combinado com alguém especial!</p>
-        </div>
-        
-        <div class="event-details">
-            <h2 style="margin-top: 0; color: #F59E0B;">📋 Detalhes do Evento</h2>
-            <div class="detail-row"><strong>Evento:</strong> ${eventName}</div>
-            <div class="detail-row"><strong>Data da Revelação:</strong> ${formattedDate}</div>
-            <div class="detail-row"><strong>Valor Sugerido:</strong> ${budgetText}</div>
-        </div>
-        
-        <div class="assignment-box">
-            <div class="label">Você vai presentear:</div>
-            <div class="name">🎁 ${assignedToName} 🎁</div>
-        </div>
-        
-        ${assignedToWishList ? `
-        <div class="wish-list">
-            <h3>💝 Lista de Desejos:</h3>
-            <p>${assignedToWishList}</p>
-        </div>
-        ` : `
-        <div class="wish-list">
-            <h3>💝 Lista de Desejos:</h3>
-            <p><em>Nenhuma preferência específica. Use sua criatividade para surpreender!</em></p>
-        </div>
-        `}
-        
-        <div class="reminder">
-            <p><strong>🤫 Lembre-se:</strong></p>
-            <p>Mantenha o sorteio em segredo! Não conte para ninguém quem você tirou. Essa é a graça do Amigo Secreto!</p>
-        </div>
-        
-        <div class="footer">
-            <p>🎄 Felizes Festas! 🎄</p>
-            <p style="margin-top: 15px; font-size: 12px;">
-                Este e-mail foi enviado pelo Amigo Secreto Online.<br>
-                Por favor, não responda este e-mail.
-            </p>
-        </div>
-    </div>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table class="email-container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px;">
+                    <tr>
+                        <td class="content">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td class="header" align="center">
+                                        <div style="font-size: 48px; margin: 20px 0;">🎅🎁</div>
+                                        <h1 style="color: #DC2626; margin: 0; font-size: 28px;">Seu Amigo Secreto</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="greeting" style="font-size: 18px; margin-bottom: 20px;">
+                                        <p>Oi, ${name}! 🎄</p>
+                                        <p>Os sorteios do Amigo Secreto foram realizados e você foi combinado com alguém especial!</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="event-details" style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #F59E0B;">
+                                        <h2 style="margin-top: 0; color: #F59E0B;">📋 Detalhes do Evento</h2>
+                                        <div class="detail-row" style="margin: 10px 0; padding: 8px 0;"><strong style="color: #059669;">Evento:</strong> ${eventName}</div>
+                                        <div class="detail-row" style="margin: 10px 0; padding: 8px 0;"><strong style="color: #059669;">Data da Revelação:</strong> ${formattedDate}</div>
+                                        <div class="detail-row" style="margin: 10px 0; padding: 8px 0;"><strong style="color: #059669;">Valor Sugerido:</strong> ${budgetText}</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="assignment-box" style="background: #d4edda; padding: 25px; border-radius: 8px; margin: 25px 0; text-align: center; border: 2px solid #059669;">
+                                        <div class="label" style="font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Você vai presentear:</div>
+                                        <div class="name" style="font-size: 32px; font-weight: bold; color: #059669; margin: 10px 0;">🎁 ${assignedToName} 🎁</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="wish-list" style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 3px solid #6B7280;">
+                                        <h3 style="margin-top: 0; color: #374151; font-size: 16px;">💝 Lista de Desejos:</h3>
+                                        <p style="margin: 5px 0; font-style: italic;">${assignedToWishList || 'Nenhuma preferência específica. Use sua criatividade para surpreender!'}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="reminder" style="background: #fef2f2; padding: 15px; border-radius: 6px; border-left: 4px solid #DC2626; margin: 20px 0;">
+                                        <p style="margin: 5px 0;"><strong style="color: #DC2626;">🤫 Lembre-se:</strong></p>
+                                        <p style="margin: 5px 0;">Mantenha o sorteio em segredo! Não conte para ninguém quem você tirou. Essa é a graça do Amigo Secreto!</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="footer" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center; font-size: 14px; color: #6B7280;">
+                                        <p style="margin: 5px 0;">🎄 Felizes Festas! 🎄</p>
+                                        <p style="margin-top: 15px; font-size: 12px;">
+                                            Este e-mail foi enviado pelo Amigo Secreto Online.<br>
+                                            Por favor, não responda este e-mail.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
     `.trim();
@@ -270,25 +307,49 @@ function getOrganizerEmailTemplate(eventData, participantCount) {
     
     return `
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="format-detection" content="telephone=no">
+    <title>✅ Confirmação - ${eventName}</title>
     <style>
+        /* Reset styles for better email client compatibility */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            width: 100% !important;
+            min-width: 100%;
+        }
+        .email-container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
+            background-color: #ffffff;
         }
-        .container {
-            background: white;
-            border-radius: 10px;
+        .content {
             padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .header {
             text-align: center;
