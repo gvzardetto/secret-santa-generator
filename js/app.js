@@ -657,13 +657,24 @@ async function saveToSupabase(formData) {
                 budget: savedEvent.budget
             };
             
-            // Send emails via our serverless function (no CORS issues!)
-            emailResults = await window.EmailService.sendAllEmails(
-                savedParticipants,
-                assignments,
-                eventDataForEmail,
-                formData.event.organizerEmail
-            );
+            // Send emails - use local testing if on localhost
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                console.log('🧪 LOCAL MODE: Using simulated email service');
+                emailResults = await window.sendAllEmailsLocal(
+                    savedParticipants,
+                    assignments,
+                    eventDataForEmail,
+                    formData.event.organizerEmail
+                );
+            } else {
+                // Send emails via our serverless function (no CORS issues!)
+                emailResults = await window.EmailService.sendAllEmails(
+                    savedParticipants,
+                    assignments,
+                    eventDataForEmail,
+                    formData.event.organizerEmail
+                );
+            }
             
             console.log('✅ Emails sent successfully!');
             console.log(`   Delivered: ${emailResults.successful}/${emailResults.total}`);
